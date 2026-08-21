@@ -1,0 +1,828 @@
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="HootieHoo" />
+<meta name="theme-color" content="#eef2f6" media="(prefers-color-scheme: light)" />
+<meta name="theme-color" content="#10161f" media="(prefers-color-scheme: dark)" />
+<title>HootieHoo — quick check-in messages</title>
+<style>
+  :root {
+    --paper: #eef2f6;
+    --paper-flat: #e5eaf0;
+    --surface: #f9fbfd;
+    --ink: #17212e;
+    --ink-muted: #57667a;
+    --ink-faint: #8b97a8;
+    --border: #d5dde6;
+    --border-soft: #e2e8ef;
+    --accent: #2467c4;
+    --accent-ink: #ffffff;
+    --accent-soft: #d9e6f8;
+    --accent-soft-ink: #1a4a8f;
+    --success: #2f8f5b;
+    --success-soft: #dcf0e4;
+    --caution: #c4552a;
+    --caution-soft: #f6ddd0;
+    --danger: #c0392f;
+    --danger-soft: #f6dad6;
+    --neutral-pill: #5f6b7a;
+    --neutral-pill-soft: #e6eaf0;
+    --shadow: rgba(23, 33, 46, 0.09);
+    --shadow-lg: rgba(23, 33, 46, 0.18);
+    --font-display: ui-serif, Charter, "Iowan Old Style", Georgia, "Times New Roman", serif;
+    --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+    --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
+    color-scheme: light;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --paper: #10161f;
+      --paper-flat: #0c1119;
+      --surface: #1a2330;
+      --ink: #e7ecf3;
+      --ink-muted: #97a3b5;
+      --ink-faint: #64728a;
+      --border: #2b3646;
+      --border-soft: #232d3b;
+      --accent: #6ba1e8;
+      --accent-ink: #0a1420;
+      --accent-soft: #1e3350;
+      --accent-soft-ink: #bcd6f8;
+      --success: #5cb488;
+      --success-soft: #17301f;
+      --caution: #d98456;
+      --caution-soft: #3a2416;
+      --danger: #e0685a;
+      --danger-soft: #3a1c17;
+      --neutral-pill: #9aa6b8;
+      --neutral-pill-soft: #212b38;
+      --shadow: rgba(0, 0, 0, 0.4);
+      --shadow-lg: rgba(0, 0, 0, 0.55);
+      color-scheme: dark;
+    }
+  }
+
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: var(--font-body);
+    -webkit-tap-highlight-color: transparent;
+  }
+  body {
+    min-height: 100vh;
+    min-height: 100dvh;
+    padding-bottom: calc(64px + env(safe-area-inset-bottom));
+  }
+  h1, h2, h3 { font-family: var(--font-display); font-weight: 600; margin: 0; }
+  p { margin: 0; }
+  button { font-family: inherit; }
+
+  header.top {
+    padding: calc(18px + env(safe-area-inset-top)) 20px 14px;
+    background: var(--paper-flat);
+    border-bottom: 1px solid var(--border-soft);
+  }
+  header.top h1 { font-size: 20px; }
+  header.top .sub { color: var(--ink-muted); font-size: 13px; margin-top: 2px; }
+
+  main { padding: 16px; max-width: 640px; margin: 0 auto; }
+  .view { display: none; flex-direction: column; gap: 16px; }
+  .view.active { display: flex; }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border-soft);
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow: 0 1px 2px var(--shadow);
+  }
+  .card + .card { margin-top: 0; }
+  .card h2 { font-size: 15px; margin-bottom: 10px; }
+  .card h2 .count { color: var(--ink-faint); font-weight: 400; font-family: var(--font-body); font-size: 13px; }
+
+  .status-row {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 13px; color: var(--ink-muted);
+    padding: 10px 12px; border-radius: 10px; background: var(--paper-flat);
+    margin-bottom: 14px;
+  }
+  .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--success); flex: none; }
+  .status-row.blocked .status-dot { background: var(--danger); }
+  .status-row.blocked { color: var(--danger); background: var(--danger-soft); }
+
+  .send-btn {
+    width: 100%;
+    display: flex; flex-direction: column; align-items: flex-start; gap: 4px;
+    padding: 18px 18px;
+    border-radius: 16px;
+    border: 1px solid var(--border-soft);
+    background: var(--surface);
+    cursor: pointer;
+    text-align: left;
+    transition: transform 0.06s ease;
+  }
+  .send-btn:active { transform: scale(0.985); }
+  .send-btn.primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--accent-ink);
+  }
+  .send-btn .label { font-family: var(--font-display); font-size: 19px; font-weight: 600; }
+  .send-btn .preview { font-size: 13px; opacity: 0.85; }
+  .send-btn .badge {
+    align-self: flex-start;
+    font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em;
+    background: rgba(255,255,255,0.22);
+    padding: 2px 8px; border-radius: 999px; margin-bottom: 2px;
+  }
+  .send-btn.primary .badge { background: rgba(255,255,255,0.22); color: var(--accent-ink); }
+  .send-btn:not(.primary) .badge { background: var(--accent-soft); color: var(--accent-soft-ink); }
+  .send-btn[disabled] { opacity: 0.5; cursor: not-allowed; }
+
+  .btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
+  .btn {
+    padding: 9px 14px; border-radius: 10px; border: 1px solid var(--border);
+    background: var(--surface); color: var(--ink); font-size: 13.5px; cursor: pointer;
+  }
+  .btn.small { padding: 6px 10px; font-size: 12.5px; }
+  .btn.ghost { background: transparent; }
+  .btn.danger { color: var(--danger); border-color: var(--danger-soft); }
+  .btn.accent { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+
+  .chip-row { display: flex; flex-wrap: wrap; gap: 6px; }
+  .chip {
+    font-size: 12.5px; padding: 4px 10px; border-radius: 999px;
+    background: var(--neutral-pill-soft); color: var(--neutral-pill);
+  }
+  .chip.off { text-decoration: line-through; opacity: 0.6; }
+
+  .member-row, .log-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 0; border-bottom: 1px solid var(--border-soft);
+  }
+  .member-row:last-child, .log-row:last-child { border-bottom: none; }
+  .member-row .info { flex: 1; min-width: 0; }
+  .member-row .name { font-size: 14.5px; font-weight: 600; }
+  .member-row .phone { font-size: 12.5px; color: var(--ink-muted); }
+  .switch {
+    position: relative; width: 42px; height: 24px; flex: none;
+    border-radius: 999px; background: var(--border); cursor: pointer; border: none;
+  }
+  .switch.on { background: var(--success); }
+  .switch .knob {
+    position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; border-radius: 50%;
+    background: #fff; transition: left 0.15s ease; box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+  }
+  .switch.on .knob { left: 20px; }
+
+  .field { display: flex; flex-direction: column; gap: 5px; }
+  .field label { font-size: 12.5px; color: var(--ink-muted); font-weight: 600; }
+  .field input[type="text"], .field input[type="tel"], .field input[type="email"],
+  .field input[type="time"], .field textarea, .field select {
+    font-family: inherit; font-size: 14.5px; padding: 9px 11px;
+    border-radius: 10px; border: 1px solid var(--border); background: var(--paper-flat); color: var(--ink);
+    width: 100%;
+  }
+  .field textarea { resize: vertical; min-height: 56px; }
+  .form-grid { display: flex; flex-direction: column; gap: 10px; }
+  .form-grid.two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+  .day-picker { display: flex; gap: 6px; flex-wrap: wrap; }
+  .day-btn {
+    width: 38px; height: 38px; border-radius: 10px; border: 1px solid var(--border);
+    background: var(--paper-flat); color: var(--ink-muted); font-size: 12.5px; cursor: pointer;
+  }
+  .day-btn.on { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+
+  .empty { color: var(--ink-faint); font-size: 13.5px; padding: 8px 0; }
+  .hint { font-size: 12.5px; color: var(--ink-faint); line-height: 1.5; }
+  .divider { height: 1px; background: var(--border-soft); margin: 14px 0; }
+
+  nav.tabs {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    display: flex; background: var(--paper-flat); border-top: 1px solid var(--border-soft);
+    padding-bottom: env(safe-area-inset-bottom);
+    z-index: 10;
+  }
+  nav.tabs button {
+    flex: 1; border: none; background: transparent; color: var(--ink-faint);
+    font-size: 11px; padding: 9px 4px 8px; display: flex; flex-direction: column; align-items: center; gap: 3px;
+    cursor: pointer;
+  }
+  nav.tabs button .ic { font-size: 18px; }
+  nav.tabs button.active { color: var(--accent); }
+
+  .toast {
+    position: fixed; left: 50%; bottom: calc(76px + env(safe-area-inset-bottom));
+    transform: translateX(-50%) translateY(8px);
+    background: var(--ink); color: var(--paper);
+    padding: 10px 16px; border-radius: 999px; font-size: 13px;
+    opacity: 0; pointer-events: none; transition: opacity 0.2s ease, transform 0.2s ease;
+    box-shadow: 0 4px 14px var(--shadow-lg); z-index: 20; white-space: nowrap;
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  .modal-backdrop {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+    display: none; align-items: flex-end; justify-content: center; z-index: 30;
+  }
+  .modal-backdrop.show { display: flex; }
+  .modal {
+    background: var(--surface); width: 100%; max-width: 480px;
+    border-radius: 18px 18px 0 0; padding: 18px 18px calc(18px + env(safe-area-inset-bottom));
+    display: flex; flex-direction: column; gap: 12px;
+    max-height: 85vh; overflow-y: auto;
+  }
+  .modal h3 { font-size: 16px; }
+</style>
+
+<header class="top">
+  <h1>HootieHoo</h1>
+  <div class="sub">Two-tap check-in messages for your people</div>
+</header>
+
+<main>
+  <!-- SEND -->
+  <section class="view active" id="view-send">
+    <div id="scheduleStatus" class="status-row">
+      <span class="status-dot"></span>
+      <span id="scheduleStatusText">Always active — no schedule set</span>
+    </div>
+
+    <button class="send-btn primary" id="btnFirst">
+      <span class="badge" id="firstBadge">Send</span>
+      <span class="label" id="firstLabel">HootieHoo</span>
+      <span class="preview" id="firstPreview">HootieHoo — heading out now.</span>
+    </button>
+
+    <button class="send-btn" id="btnSecond">
+      <span class="badge" id="secondBadge">Follow-up</span>
+      <span class="label" id="secondLabel">Resume Life</span>
+      <span class="preview" id="secondPreview">Resume Life — I'm back, all clear.</span>
+    </button>
+
+    <div class="card">
+      <h2>Recipients <span class="count" id="recipientCount">0 of 0 enabled</span></h2>
+      <div class="chip-row" id="recipientChips"></div>
+      <div class="hint" style="margin-top:10px;">Tapping a message opens your phone's Messages app with everyone enabled below already filled in — you still give the final tap to send, since no phone lets a website send texts silently.</div>
+    </div>
+
+    <div class="card">
+      <h2>Recent activity</h2>
+      <div id="logList"></div>
+    </div>
+  </section>
+
+  <!-- MEMBERS -->
+  <section class="view" id="view-members">
+    <div class="card">
+      <h2>Group members</h2>
+      <div id="memberList"></div>
+      <div class="empty" id="memberEmpty" style="display:none;">No one added yet. Add your first check-in contact below.</div>
+      <div class="divider"></div>
+      <div class="form-grid">
+        <div class="field">
+          <label for="newName">Name</label>
+          <input type="text" id="newName" placeholder="e.g. Mom" />
+        </div>
+        <div class="form-grid two">
+          <div class="field">
+            <label for="newPhone">Phone</label>
+            <input type="tel" id="newPhone" placeholder="+15551234567" />
+          </div>
+          <div class="field">
+            <label for="newEmail">Email (optional)</label>
+            <input type="email" id="newEmail" placeholder="for email fallback" />
+          </div>
+        </div>
+        <button class="btn accent" id="addMemberBtn">Add member</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- SCHEDULE -->
+  <section class="view" id="view-schedule">
+    <div class="card">
+      <h2>Active hours</h2>
+      <div class="member-row" style="border:none; padding-top:0;">
+        <div class="info">
+          <div class="name">Restrict to a schedule</div>
+          <div class="phone">Off = the button always works</div>
+        </div>
+        <button class="switch" id="scheduleToggle"><span class="knob"></span></button>
+      </div>
+      <div id="scheduleFields" style="display:none;">
+        <div class="divider"></div>
+        <div class="field" style="margin-bottom:12px;">
+          <label>Days</label>
+          <div class="day-picker" id="dayPicker"></div>
+        </div>
+        <div class="form-grid two">
+          <div class="field">
+            <label for="startTime">From</label>
+            <input type="time" id="startTime" />
+          </div>
+          <div class="field">
+            <label for="endTime">Until</label>
+            <input type="time" id="endTime" />
+          </div>
+        </div>
+        <p class="hint" style="margin-top:10px;">Outside these hours the Send tab shows a lock, but there's always an "send anyway" option — a schedule shouldn't get in the way of a real check-in.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- SETTINGS -->
+  <section class="view" id="view-settings">
+    <div class="card">
+      <h2>Message 1 — the "heads up" text</h2>
+      <div class="form-grid">
+        <div class="field">
+          <label for="firstLabelInput">Button label</label>
+          <input type="text" id="firstLabelInput" />
+        </div>
+        <div class="field">
+          <label for="firstBodyInput">Message text</label>
+          <textarea id="firstBodyInput"></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Message 2 — the follow-up / all-clear</h2>
+      <div class="form-grid">
+        <div class="field">
+          <label for="secondLabelInput">Button label</label>
+          <input type="text" id="secondLabelInput" />
+        </div>
+        <div class="field">
+          <label for="secondBodyInput">Message text</label>
+          <textarea id="secondBodyInput"></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <h2>Send via</h2>
+      <div class="field">
+        <select id="channelSelect">
+          <option value="sms">Text message (SMS group text)</option>
+          <option value="email">Email</option>
+        </select>
+      </div>
+      <p class="hint" style="margin-top:10px;">SMS opens a group text to everyone enabled. Email opens a draft bcc'd to everyone with an email address on file — useful for contacts without a phone number, or if group SMS isn't reliable between iPhone and Android in your group.</p>
+    </div>
+    <div class="card">
+      <h2>Data</h2>
+      <p class="hint">Everything — members, messages, schedule, activity log — is stored only in this browser, on this device. Nothing is sent anywhere except the message itself, and only when you tap Send in the app that opens.</p>
+      <div class="btn-row" style="margin-top:10px;">
+        <button class="btn danger" id="resetLogBtn">Clear activity log</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<nav class="tabs">
+  <button class="active" data-view="send"><span class="ic">&#9679;</span>Send</button>
+  <button data-view="members"><span class="ic">&#9737;</span>Members</button>
+  <button data-view="schedule"><span class="ic">&#9201;</span>Schedule</button>
+  <button data-view="settings"><span class="ic">&#9881;</span>Settings</button>
+</nav>
+
+<div class="toast" id="toast"></div>
+
+<div class="modal-backdrop" id="editBackdrop">
+  <div class="modal">
+    <h3>Edit member</h3>
+    <div class="form-grid">
+      <div class="field">
+        <label for="editName">Name</label>
+        <input type="text" id="editName" />
+      </div>
+      <div class="form-grid two">
+        <div class="field">
+          <label for="editPhone">Phone</label>
+          <input type="tel" id="editPhone" />
+        </div>
+        <div class="field">
+          <label for="editEmail">Email</label>
+          <input type="email" id="editEmail" />
+        </div>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn accent" id="editSaveBtn">Save</button>
+      <button class="btn danger" id="editDeleteBtn">Delete member</button>
+      <button class="btn ghost" id="editCancelBtn">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+  var STORAGE_KEY = "hootiehoo.v1";
+  var DAY_LABELS = ["S", "M", "T", "W", "T", "F", "S"];
+
+  function uid() { return Math.random().toString(36).slice(2, 10); }
+
+  function defaultState() {
+    return {
+      members: [],
+      messages: {
+        first: { label: "HootieHoo", body: "HootieHoo — heading out now." },
+        second: { label: "Resume Life", body: "Resume Life — I'm back, all clear." }
+      },
+      schedule: { enabled: false, days: [0, 1, 2, 3, 4, 5, 6], start: "07:00", end: "22:00" },
+      channel: "sms",
+      nextWhich: "first",
+      log: [],
+      editingId: null
+    };
+  }
+
+  function load() {
+    try {
+      var raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return defaultState();
+      var parsed = JSON.parse(raw);
+      var d = defaultState();
+      return {
+        members: Array.isArray(parsed.members) ? parsed.members : d.members,
+        messages: Object.assign({}, d.messages, parsed.messages, {
+          first: Object.assign({}, d.messages.first, parsed.messages && parsed.messages.first),
+          second: Object.assign({}, d.messages.second, parsed.messages && parsed.messages.second)
+        }),
+        schedule: Object.assign({}, d.schedule, parsed.schedule),
+        channel: parsed.channel === "email" ? "email" : "sms",
+        nextWhich: parsed.nextWhich === "second" ? "second" : "first",
+        log: Array.isArray(parsed.log) ? parsed.log.slice(0, 25) : []
+      };
+    } catch (e) {
+      return defaultState();
+    }
+  }
+
+  var state = load();
+
+  function save() {
+    var toSave = {
+      members: state.members,
+      messages: state.messages,
+      schedule: state.schedule,
+      channel: state.channel,
+      nextWhich: state.nextWhich,
+      log: state.log.slice(0, 25)
+    };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
+  }
+
+  function $(id) { return document.getElementById(id); }
+
+  function toast(msg) {
+    var t = $("toast");
+    t.textContent = msg;
+    t.classList.add("show");
+    clearTimeout(toast._t);
+    toast._t = setTimeout(function () { t.classList.remove("show"); }, 2200);
+  }
+
+  // ---------- Tabs ----------
+  document.querySelectorAll("nav.tabs button").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      document.querySelectorAll("nav.tabs button").forEach(function (b) { b.classList.remove("active"); });
+      document.querySelectorAll(".view").forEach(function (v) { v.classList.remove("active"); });
+      btn.classList.add("active");
+      $("view-" + btn.dataset.view).classList.add("active");
+    });
+  });
+
+  // ---------- Schedule logic ----------
+  function isWithinSchedule(now) {
+    var s = state.schedule;
+    if (!s.enabled) return true;
+    now = now || new Date();
+    var day = now.getDay();
+    if (s.days.indexOf(day) === -1) return false;
+    var mins = now.getHours() * 60 + now.getMinutes();
+    var startParts = s.start.split(":").map(Number);
+    var endParts = s.end.split(":").map(Number);
+    var start = startParts[0] * 60 + startParts[1];
+    var end = endParts[0] * 60 + endParts[1];
+    if (start <= end) return mins >= start && mins <= end;
+    return mins >= start || mins <= end; // overnight window
+  }
+
+  function renderScheduleStatus() {
+    var row = $("scheduleStatus");
+    var text = $("scheduleStatusText");
+    var within = isWithinSchedule();
+    if (!state.schedule.enabled) {
+      row.classList.remove("blocked");
+      text.textContent = "Always active — no schedule set";
+    } else if (within) {
+      row.classList.remove("blocked");
+      text.textContent = "Active now — " + state.schedule.start + "–" + state.schedule.end;
+    } else {
+      row.classList.add("blocked");
+      text.textContent = "Outside active hours (" + state.schedule.start + "–" + state.schedule.end + ") — tap Send anyway to override";
+    }
+    return within;
+  }
+
+  // ---------- Send ----------
+  function normalizePhone(p) {
+    return (p || "").replace(/[^\d+]/g, "");
+  }
+
+  function enabledMembers() {
+    return state.members.filter(function (m) { return m.enabled; });
+  }
+
+  function buildLink(which) {
+    var msg = state.messages[which];
+    var members = enabledMembers();
+    var body = encodeURIComponent(msg.body);
+    if (state.channel === "email") {
+      var emails = members.map(function (m) { return m.email; }).filter(Boolean);
+      var subject = encodeURIComponent(msg.label);
+      return "mailto:?bcc=" + emails.join(",") + "&subject=" + subject + "&body=" + body;
+    }
+    var phones = members.map(function (m) { return normalizePhone(m.phone); }).filter(Boolean);
+    return "sms:" + phones.join(",") + "?&body=" + body;
+  }
+
+  function recipientReadyCount() {
+    var members = enabledMembers();
+    if (state.channel === "email") return members.filter(function (m) { return m.email; }).length;
+    return members.filter(function (m) { return m.phone; }).length;
+  }
+
+  function doSend(which, opts) {
+    opts = opts || {};
+    if (!opts.override && !isWithinSchedule()) {
+      toast("Outside active hours — tap again to send anyway");
+      renderScheduleStatus();
+      pendingOverride = which;
+      return;
+    }
+    pendingOverride = null;
+    var ready = recipientReadyCount();
+    if (ready === 0) {
+      toast("No enabled recipients have a " + (state.channel === "email" ? "email" : "phone number") + " — check Members");
+      return;
+    }
+    var link = buildLink(which);
+    window.location.href = link;
+    state.log.unshift({ which: which, ts: Date.now(), count: ready });
+    state.log = state.log.slice(0, 25);
+    state.nextWhich = which === "first" ? "second" : "first";
+    save();
+    renderSend();
+  }
+
+  var pendingOverride = null;
+
+  $("btnFirst").addEventListener("click", function () {
+    doSend("first", { override: pendingOverride === "first" });
+  });
+  $("btnSecond").addEventListener("click", function () {
+    doSend("second", { override: pendingOverride === "second" });
+  });
+
+  function timeAgo(ts) {
+    var mins = Math.round((Date.now() - ts) / 60000);
+    if (mins < 1) return "just now";
+    if (mins < 60) return mins + "m ago";
+    var hrs = Math.round(mins / 60);
+    if (hrs < 24) return hrs + "h ago";
+    return new Date(ts).toLocaleDateString();
+  }
+
+  function renderSend() {
+    var within = renderScheduleStatus();
+
+    $("firstLabel").textContent = state.messages.first.label;
+    $("firstPreview").textContent = state.messages.first.body;
+    $("secondLabel").textContent = state.messages.second.label;
+    $("secondPreview").textContent = state.messages.second.body;
+
+    $("firstBadge").textContent = state.nextWhich === "first" ? "Next" : "Send";
+    $("secondBadge").textContent = state.nextWhich === "second" ? "Next" : "Follow-up";
+    $("btnFirst").classList.toggle("primary", state.nextWhich === "first");
+    $("btnSecond").classList.toggle("primary", state.nextWhich === "second");
+
+    $("btnFirst").disabled = false;
+    $("btnSecond").disabled = false;
+
+    var members = state.members;
+    var enabled = enabledMembers();
+    $("recipientCount").textContent = enabled.length + " of " + members.length + " enabled";
+    var chips = $("recipientChips");
+    chips.innerHTML = "";
+    if (members.length === 0) {
+      chips.innerHTML = '<span class="empty">No members yet — add some in the Members tab.</span>';
+    } else {
+      members.forEach(function (m) {
+        var c = document.createElement("span");
+        c.className = "chip" + (m.enabled ? "" : " off");
+        c.textContent = m.name || m.phone || "(unnamed)";
+        chips.appendChild(c);
+      });
+    }
+
+    var logList = $("logList");
+    logList.innerHTML = "";
+    if (state.log.length === 0) {
+      logList.innerHTML = '<div class="empty">Nothing sent yet.</div>';
+    } else {
+      state.log.forEach(function (entry) {
+        var row = document.createElement("div");
+        row.className = "log-row";
+        var label = state.messages[entry.which] ? state.messages[entry.which].label : entry.which;
+        row.innerHTML = '<div class="info"><div class="name">' + escapeHtml(label) + '</div>' +
+          '<div class="phone">Opened for ' + entry.count + ' recipient' + (entry.count === 1 ? "" : "s") + '</div></div>' +
+          '<div class="phone">' + timeAgo(entry.ts) + '</div>';
+        logList.appendChild(row);
+      });
+    }
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+
+  // ---------- Members ----------
+  function renderMembers() {
+    var list = $("memberList");
+    list.innerHTML = "";
+    $("memberEmpty").style.display = state.members.length === 0 ? "block" : "none";
+    state.members.forEach(function (m) {
+      var row = document.createElement("div");
+      row.className = "member-row";
+      var sub = m.phone || "";
+      if (m.email) sub += (sub ? " · " : "") + m.email;
+      row.innerHTML =
+        '<div class="info"><div class="name"></div><div class="phone"></div></div>' +
+        '<button class="switch' + (m.enabled ? " on" : "") + '"><span class="knob"></span></button>';
+      row.querySelector(".name").textContent = m.name || "(unnamed)";
+      row.querySelector(".phone").textContent = sub;
+      row.querySelector(".info").addEventListener("click", function () { openEdit(m.id); });
+      row.querySelector(".switch").addEventListener("click", function () {
+        m.enabled = !m.enabled;
+        save();
+        renderMembers();
+        renderSend();
+      });
+      list.appendChild(row);
+    });
+  }
+
+  $("addMemberBtn").addEventListener("click", function () {
+    var name = $("newName").value.trim();
+    var phone = $("newPhone").value.trim();
+    var email = $("newEmail").value.trim();
+    if (!name || (!phone && !email)) {
+      toast("Add a name and at least a phone or email");
+      return;
+    }
+    state.members.push({ id: uid(), name: name, phone: phone, email: email, enabled: true });
+    $("newName").value = "";
+    $("newPhone").value = "";
+    $("newEmail").value = "";
+    save();
+    renderMembers();
+    renderSend();
+    toast("Added " + name);
+  });
+
+  function openEdit(id) {
+    var m = state.members.find(function (x) { return x.id === id; });
+    if (!m) return;
+    state.editingId = id;
+    $("editName").value = m.name || "";
+    $("editPhone").value = m.phone || "";
+    $("editEmail").value = m.email || "";
+    $("editBackdrop").classList.add("show");
+  }
+  function closeEdit() {
+    $("editBackdrop").classList.remove("show");
+    state.editingId = null;
+  }
+  $("editCancelBtn").addEventListener("click", closeEdit);
+  $("editBackdrop").addEventListener("click", function (e) {
+    if (e.target === $("editBackdrop")) closeEdit();
+  });
+  $("editSaveBtn").addEventListener("click", function () {
+    var m = state.members.find(function (x) { return x.id === state.editingId; });
+    if (!m) return;
+    m.name = $("editName").value.trim();
+    m.phone = $("editPhone").value.trim();
+    m.email = $("editEmail").value.trim();
+    save();
+    renderMembers();
+    renderSend();
+    closeEdit();
+  });
+  $("editDeleteBtn").addEventListener("click", function () {
+    state.members = state.members.filter(function (x) { return x.id !== state.editingId; });
+    save();
+    renderMembers();
+    renderSend();
+    closeEdit();
+  });
+
+  // ---------- Schedule ----------
+  function renderDayPicker() {
+    var wrap = $("dayPicker");
+    wrap.innerHTML = "";
+    DAY_LABELS.forEach(function (label, idx) {
+      var btn = document.createElement("button");
+      btn.className = "day-btn" + (state.schedule.days.indexOf(idx) !== -1 ? " on" : "");
+      btn.textContent = label;
+      btn.addEventListener("click", function () {
+        var pos = state.schedule.days.indexOf(idx);
+        if (pos === -1) state.schedule.days.push(idx);
+        else state.schedule.days.splice(pos, 1);
+        save();
+        renderDayPicker();
+        renderSend();
+      });
+      wrap.appendChild(btn);
+    });
+  }
+
+  function renderSchedule() {
+    var on = state.schedule.enabled;
+    $("scheduleToggle").classList.toggle("on", on);
+    $("scheduleFields").style.display = on ? "block" : "none";
+    $("startTime").value = state.schedule.start;
+    $("endTime").value = state.schedule.end;
+    renderDayPicker();
+  }
+
+  $("scheduleToggle").addEventListener("click", function () {
+    state.schedule.enabled = !state.schedule.enabled;
+    save();
+    renderSchedule();
+    renderSend();
+  });
+  $("startTime").addEventListener("change", function () {
+    state.schedule.start = $("startTime").value || "00:00";
+    save();
+    renderSend();
+  });
+  $("endTime").addEventListener("change", function () {
+    state.schedule.end = $("endTime").value || "23:59";
+    save();
+    renderSend();
+  });
+
+  // ---------- Settings ----------
+  function renderSettings() {
+    $("firstLabelInput").value = state.messages.first.label;
+    $("firstBodyInput").value = state.messages.first.body;
+    $("secondLabelInput").value = state.messages.second.label;
+    $("secondBodyInput").value = state.messages.second.body;
+    $("channelSelect").value = state.channel;
+  }
+
+  function bindSettingsField(id, applyFn) {
+    $(id).addEventListener("input", function () {
+      applyFn($(id).value);
+      save();
+      renderSend();
+    });
+  }
+  bindSettingsField("firstLabelInput", function (v) { state.messages.first.label = v || "Message 1"; });
+  bindSettingsField("firstBodyInput", function (v) { state.messages.first.body = v; });
+  bindSettingsField("secondLabelInput", function (v) { state.messages.second.label = v || "Message 2"; });
+  bindSettingsField("secondBodyInput", function (v) { state.messages.second.body = v; });
+  $("channelSelect").addEventListener("change", function () {
+    state.channel = $("channelSelect").value;
+    save();
+    renderSend();
+  });
+
+  $("resetLogBtn").addEventListener("click", function () {
+    state.log = [];
+    save();
+    renderSend();
+    toast("Activity log cleared");
+  });
+
+  // ---------- Init ----------
+  renderSend();
+  renderMembers();
+  renderSchedule();
+  renderSettings();
+
+  setInterval(function () {
+    renderScheduleStatus();
+  }, 30000);
+})();
+</script>
