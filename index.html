@@ -988,10 +988,12 @@
     chips.innerHTML = "";
     if (members.length === 0) {
       chips.innerHTML = '<span class="empty">No members yet — add some in the Members tab.</span>';
+    } else if (enabled.length === 0) {
+      chips.innerHTML = '<span class="empty">Nobody currently included — check your groups above or individual members.</span>';
     } else {
-      members.forEach(function (m) {
+      enabled.forEach(function (m) {
         var c = document.createElement("span");
-        c.className = "chip" + (isMemberActive(m) ? "" : " off");
+        c.className = "chip";
         c.textContent = m.name || m.phone || "(unnamed)";
         chips.appendChild(c);
       });
