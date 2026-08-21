@@ -10,26 +10,27 @@
 <title>HootieHoo — quick check-in messages</title>
 <style>
   :root {
-    --bg: #05070b;
-    --panel: #0f1521;
-    --panel-alt: #141b28;
-    --ink: #e7ecf3;
-    --ink-muted: #8f9bb0;
-    --ink-faint: #57627a;
-    --border: #212b3a;
-    --border-soft: #1a2230;
-    --accent: #6ba1e8;
-    --accent-ink: #06101d;
-    --accent-soft: #1c2c42;
-    --accent-soft-ink: #bcd6f8;
-    --success: #35c483;
-    --success-soft: #123322;
-    --danger: #e0685a;
-    --danger-soft: #2c1614;
-    --neutral-pill: #8b96aa;
-    --neutral-pill-soft: #17202d;
-    --shadow: rgba(0, 0, 0, 0.5);
-    --shadow-lg: rgba(0, 0, 0, 0.65);
+    --bg: #030710;
+    --panel: #0a1220;
+    --panel-alt: #0e1a2c;
+    --ink: #e8f6ff;
+    --ink-muted: #7fa3bd;
+    --ink-faint: #4d6982;
+    --border: #1c3a52;
+    --border-soft: #142838;
+    --cyan: #22e2ff;
+    --cyan-ink: #001217;
+    --cyan-soft: rgba(34, 226, 255, 0.14);
+    --cyan-glow: rgba(34, 226, 255, 0.45);
+    --purple: #b46bff;
+    --purple-soft: rgba(180, 107, 255, 0.16);
+    --purple-glow: rgba(180, 107, 255, 0.4);
+    --danger: #ff4d5e;
+    --danger-soft: rgba(255, 77, 94, 0.15);
+    --neutral-pill: #6c8aa1;
+    --neutral-pill-soft: #0e1c2a;
+    --shadow: rgba(0, 0, 0, 0.55);
+    --shadow-lg: rgba(0, 0, 0, 0.7);
 
     --red-hi: #ff8a73;
     --red-mid: #e0392b;
@@ -46,12 +47,12 @@
     --blue-dim: #142845;
     --blue-glow: rgba(63, 127, 224, 0.55);
 
-    --unlit-hi: #4a5262;
-    --unlit-mid: #2c3340;
-    --unlit-dim: #14181f;
+    --unlit-hi: #46566a;
+    --unlit-mid: #2a3648;
+    --unlit-dim: #131b26;
     --unlit-glow: rgba(0, 0, 0, 0);
 
-    --font-display: ui-serif, Charter, "Iowan Old Style", Georgia, "Times New Roman", serif;
+    --font-display: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
     --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
     --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
     color-scheme: dark;
@@ -70,45 +71,82 @@
     min-height: 100vh;
     min-height: 100dvh;
     padding-bottom: calc(64px + env(safe-area-inset-bottom));
+    background-color: var(--bg);
+    background-image:
+      repeating-linear-gradient(0deg, rgba(34,226,255,0.05) 0, rgba(34,226,255,0.05) 1px, transparent 1px, transparent 40px),
+      repeating-linear-gradient(90deg, rgba(34,226,255,0.05) 0, rgba(34,226,255,0.05) 1px, transparent 1px, transparent 40px);
+    background-attachment: fixed;
   }
   h1, h2, h3 { font-family: var(--font-display); font-weight: 600; margin: 0; }
   p { margin: 0; }
   button { font-family: inherit; }
 
   header.top {
-    padding: calc(18px + env(safe-area-inset-top)) 20px 14px;
+    padding: calc(18px + env(safe-area-inset-top)) 20px 16px;
     background: var(--panel);
-    border-bottom: 1px solid var(--border-soft);
+    border-bottom: 1px solid var(--border);
+    position: relative;
+    overflow: hidden;
   }
-  header.top h1 { font-size: 20px; letter-spacing: 0.02em; }
-  header.top .sub { color: var(--ink-muted); font-size: 13px; margin-top: 2px; }
+  header.top::before {
+    content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px;
+    background: linear-gradient(180deg, var(--cyan), transparent);
+  }
+  header.top::after {
+    content: ""; position: absolute; left: 0; right: 0; bottom: -3px; height: 3px;
+    background: repeating-linear-gradient(135deg, var(--cyan) 0 8px, transparent 8px 16px);
+    opacity: 0.55;
+  }
+  header.top h1 {
+    font-size: 19px; letter-spacing: 0.1em; text-transform: uppercase;
+    text-shadow: 0 0 14px var(--cyan-glow);
+  }
+  header.top .sub { color: var(--ink-muted); font-size: 12px; margin-top: 3px; letter-spacing: 0.01em; }
 
   main { padding: 16px; max-width: 640px; margin: 0 auto; }
   .view { display: none; flex-direction: column; gap: 16px; }
   .view.active { display: flex; }
 
-  .card {
+  .card, .dash-armbar {
     background: var(--panel);
-    border: 1px solid var(--border-soft);
-    border-radius: 16px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
     padding: 16px;
-    box-shadow: 0 1px 2px var(--shadow);
+    box-shadow: 0 1px 2px var(--shadow), inset 0 0 0 1px rgba(34,226,255,0.025);
+    position: relative;
   }
-  .card h2 { font-size: 15px; margin-bottom: 10px; }
-  .card h2 .count { color: var(--ink-faint); font-weight: 400; font-family: var(--font-body); font-size: 13px; }
+  .card::before, .dash-armbar::before,
+  .card::after, .dash-armbar::after {
+    content: ""; position: absolute; width: 13px; height: 13px; pointer-events: none;
+    border-color: var(--cyan); border-style: solid; opacity: 0.5;
+  }
+  .card::before, .dash-armbar::before { top: -1px; left: -1px; border-width: 2px 0 0 2px; }
+  .card::after, .dash-armbar::after { bottom: -1px; right: -1px; border-width: 0 2px 2px 0; }
+  .card h2 {
+    font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 600;
+    color: var(--cyan); margin-bottom: 12px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .card h2::before {
+    content: ""; width: 4px; height: 4px; flex: none; border-radius: 1px;
+    background: var(--cyan); box-shadow: 0 0 6px var(--cyan);
+  }
+  .card h2 .count {
+    color: var(--ink-faint); font-weight: 400; font-family: var(--font-body); font-size: 12px;
+    text-transform: none; letter-spacing: 0; margin-left: auto;
+  }
 
   /* ---------- Dashboard ---------- */
   .dash-armbar {
     display: flex; align-items: center; justify-content: space-between;
-    background: var(--panel); border: 1px solid var(--border-soft); border-radius: 14px;
     padding: 12px 16px;
   }
   .dash-armbar .label {
-    font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+    font-family: var(--font-mono); font-size: 10.5px; letter-spacing: 0.14em; text-transform: uppercase;
     color: var(--ink-faint);
   }
-  .dash-armbar .state { font-family: var(--font-mono); font-size: 15px; margin-top: 2px; letter-spacing: 0.04em; }
-  .dash-armbar .state.on { color: var(--success); }
+  .dash-armbar .state { font-family: var(--font-mono); font-size: 15px; margin-top: 2px; letter-spacing: 0.06em; text-transform: uppercase; }
+  .dash-armbar .state.on { color: var(--cyan); text-shadow: 0 0 10px var(--cyan-glow); }
   .dash-armbar .state.off { color: var(--ink-faint); }
 
   .dash-circles {
@@ -187,25 +225,36 @@
 
   .btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
   .btn {
-    padding: 9px 14px; border-radius: 10px; border: 1px solid var(--border);
-    background: var(--panel-alt); color: var(--ink); font-size: 13.5px; cursor: pointer;
+    padding: 9px 16px; border-radius: 4px; border: 1px solid var(--border);
+    background: var(--panel-alt); color: var(--ink); font-size: 12.5px; cursor: pointer;
+    font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.05em;
+    transition: box-shadow 0.15s ease, border-color 0.15s ease;
   }
   .btn.ghost { background: transparent; }
+  .btn.ghost:active { border-color: var(--cyan); }
   .btn.danger { color: var(--danger); border-color: var(--danger-soft); }
-  .btn.accent { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+  .btn.accent {
+    background: var(--cyan); border-color: var(--cyan); color: var(--cyan-ink); font-weight: 700;
+    box-shadow: 0 0 16px -3px var(--cyan-glow);
+  }
 
   .chip-row { display: flex; flex-wrap: wrap; gap: 6px; }
   .chip {
-    font-size: 12.5px; padding: 4px 10px; border-radius: 999px;
-    background: var(--neutral-pill-soft); color: var(--neutral-pill);
+    font-size: 12px; padding: 4px 10px; border-radius: 4px;
+    background: var(--neutral-pill-soft); color: var(--neutral-pill); border: 1px solid var(--border-soft);
+    font-family: var(--font-mono); letter-spacing: 0.01em;
   }
-  .chip.off { text-decoration: line-through; opacity: 0.6; }
+  .chip.off { text-decoration: line-through; opacity: 0.55; }
   .chip-toggle {
-    font-size: 12.5px; padding: 5px 12px; border-radius: 999px;
+    font-size: 12px; padding: 6px 14px; border-radius: 4px;
     background: var(--panel-alt); color: var(--ink-muted); border: 1px solid var(--border);
-    cursor: pointer; font-family: inherit;
+    cursor: pointer; font-family: var(--font-mono); text-transform: uppercase; letter-spacing: 0.04em;
+    transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
   }
-  .chip-toggle.on { background: var(--accent-soft); color: var(--accent-soft-ink); border-color: var(--accent); }
+  .chip-toggle.on {
+    background: var(--cyan); color: var(--cyan-ink); border-color: var(--cyan); font-weight: 700;
+    box-shadow: 0 0 14px -3px var(--cyan-glow);
+  }
 
   .group-name-input {
     font-size: 14.5px; font-weight: 600; color: var(--ink);
@@ -224,23 +273,41 @@
   .member-row .name { font-size: 14.5px; font-weight: 600; }
   .member-row .phone { font-size: 12.5px; color: var(--ink-muted); }
   .switch {
-    position: relative; width: 42px; height: 24px; flex: none;
-    border-radius: 999px; background: var(--border); cursor: pointer; border: none;
+    position: relative; width: 52px; height: 26px; flex: none;
+    border-radius: 4px; background: var(--panel-alt); cursor: pointer; border: 1px solid var(--border);
+    overflow: hidden; transition: border-color 0.15s ease, box-shadow 0.15s ease;
   }
-  .switch.on { background: var(--success); }
+  .switch::before {
+    content: "OFF"; position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
+    font-family: var(--font-mono); font-size: 8.5px; font-weight: 700; letter-spacing: 0.04em;
+    color: var(--ink-faint);
+  }
+  .switch.on {
+    background: var(--cyan-soft); border-color: var(--cyan);
+    box-shadow: 0 0 10px -2px var(--cyan-glow);
+  }
+  .switch.on::before { content: "ON"; left: 6px; right: auto; color: var(--cyan); }
   .switch .knob {
-    position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; border-radius: 50%;
-    background: #fff; transition: left 0.15s ease; box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+    position: absolute; top: 2px; left: 2px; width: 20px; height: 20px; border-radius: 3px;
+    background: #dbe7ef; transition: left 0.15s ease, background 0.15s ease; box-shadow: 0 1px 3px rgba(0,0,0,0.4);
+    z-index: 1;
   }
-  .switch.on .knob { left: 20px; }
+  .switch.on .knob { left: 28px; background: var(--cyan); box-shadow: 0 0 8px var(--cyan-glow); }
 
   .field { display: flex; flex-direction: column; gap: 5px; }
-  .field label { font-size: 12.5px; color: var(--ink-muted); font-weight: 600; }
+  .field label {
+    font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.06em; text-transform: uppercase;
+    color: var(--ink-muted); font-weight: 600;
+  }
   .field input[type="text"], .field input[type="tel"], .field input[type="email"],
   .field input[type="time"], .field textarea, .field select {
     font-family: inherit; font-size: 14.5px; padding: 9px 11px;
-    border-radius: 10px; border: 1px solid var(--border); background: var(--panel-alt); color: var(--ink);
+    border-radius: 4px; border: 1px solid var(--border); background: var(--panel-alt); color: var(--ink);
     width: 100%;
+    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  }
+  .field input:focus, .field textarea:focus, .field select:focus {
+    outline: none; border-color: var(--cyan); box-shadow: 0 0 0 3px var(--cyan-soft);
   }
   .field textarea { resize: vertical; min-height: 56px; }
   .field input[readonly] { color: var(--ink-muted); }
@@ -253,41 +320,51 @@
 
   nav.tabs {
     position: fixed; bottom: 0; left: 0; right: 0;
-    display: flex; background: var(--panel); border-top: 1px solid var(--border-soft);
+    display: flex; background: var(--panel); border-top: 1px solid var(--border);
     padding-bottom: env(safe-area-inset-bottom);
+    box-shadow: 0 -1px 0 var(--cyan-soft), 0 -10px 26px -14px var(--cyan-glow);
     z-index: 10;
   }
   nav.tabs button {
     flex: 1; border: none; background: transparent; color: var(--ink-faint);
-    font-size: 11px; padding: 9px 4px 8px; display: flex; flex-direction: column; align-items: center; gap: 3px;
-    cursor: pointer;
+    font-family: var(--font-mono); font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase;
+    padding: 10px 4px 8px; display: flex; flex-direction: column; align-items: center; gap: 4px;
+    cursor: pointer; position: relative;
   }
-  nav.tabs button .ic { font-size: 18px; }
-  nav.tabs button.active { color: var(--accent); }
+  nav.tabs button .ic { font-size: 17px; }
+  nav.tabs button.active { color: var(--cyan); }
+  nav.tabs button.active::before {
+    content: ""; position: absolute; top: 0; left: 18%; right: 18%; height: 2px;
+    background: var(--cyan); box-shadow: 0 0 8px var(--cyan-glow);
+  }
 
   .toast {
     position: fixed; left: 50%; bottom: calc(76px + env(safe-area-inset-bottom));
     transform: translateX(-50%) translateY(8px);
-    background: var(--ink); color: var(--bg);
-    padding: 10px 16px; border-radius: 999px; font-size: 13px;
+    background: var(--panel); color: var(--ink); border: 1px solid var(--cyan);
+    padding: 10px 16px; border-radius: 4px; font-size: 12.5px;
+    font-family: var(--font-mono); letter-spacing: 0.01em;
     opacity: 0; pointer-events: none; transition: opacity 0.2s ease, transform 0.2s ease;
-    box-shadow: 0 4px 14px var(--shadow-lg); z-index: 20; white-space: nowrap;
+    box-shadow: 0 4px 20px var(--shadow-lg), 0 0 16px -4px var(--cyan-glow); z-index: 20; white-space: nowrap;
   }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
   .modal-backdrop {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.55);
+    position: fixed; inset: 0; background: rgba(0,0,0,0.6);
     display: none; align-items: flex-end; justify-content: center; z-index: 30;
   }
   .modal-backdrop.show { display: flex; }
   .modal {
     background: var(--panel); width: 100%; max-width: 480px;
-    border-radius: 18px 18px 0 0; padding: 18px 18px calc(18px + env(safe-area-inset-bottom));
+    border-radius: 8px 8px 0 0; padding: 18px 18px calc(18px + env(safe-area-inset-bottom));
     display: flex; flex-direction: column; gap: 12px;
     max-height: 85vh; overflow-y: auto;
-    border: 1px solid var(--border-soft); border-bottom: none;
+    border: 1px solid var(--cyan-soft); border-bottom: none;
+    box-shadow: 0 -10px 40px -14px var(--cyan-glow);
   }
-  .modal h3 { font-size: 16px; }
+  .modal h3 {
+    font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--cyan);
+  }
 </style>
 
 <header class="top">
