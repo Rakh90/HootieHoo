@@ -200,6 +200,20 @@
     background: var(--neutral-pill-soft); color: var(--neutral-pill);
   }
   .chip.off { text-decoration: line-through; opacity: 0.6; }
+  .chip-toggle {
+    font-size: 12.5px; padding: 5px 12px; border-radius: 999px;
+    background: var(--panel-alt); color: var(--ink-muted); border: 1px solid var(--border);
+    cursor: pointer; font-family: inherit;
+  }
+  .chip-toggle.on { background: var(--accent-soft); color: var(--accent-soft-ink); border-color: var(--accent); }
+
+  .group-name-input {
+    font-size: 14.5px; font-weight: 600; color: var(--ink);
+    background: transparent; border: none; padding: 0; width: 100%;
+    font-family: inherit;
+  }
+  .group-name-input:focus { outline: none; }
+  .btn.small { padding: 5px 10px; font-size: 12px; }
 
   .member-row, .log-row {
     display: flex; align-items: center; gap: 10px;
@@ -329,8 +343,9 @@
 
     <div class="card">
       <h2>Recipients <span class="count" id="recipientCount">0 of 0 enabled</span></h2>
+      <div class="chip-row" id="groupToggleChips" style="margin-bottom:10px;"></div>
       <div class="chip-row" id="recipientChips"></div>
-      <div class="hint" style="margin-top:10px;">Tapping a button opens your phone's Messages app with everyone enabled below already filled in — you still give the final tap to send, since no phone lets a website send texts silently.</div>
+      <div class="hint" style="margin-top:10px;">Tapping a button opens your phone's Messages app with everyone enabled below already filled in — you still give the final tap to send, since no phone lets a website send texts silently. Tap a group above to turn its whole roster on or off at once.</div>
     </div>
 
     <div class="card">
@@ -342,14 +357,27 @@
   <!-- MEMBERS -->
   <section class="view" id="view-members">
     <div class="card">
-      <h2>Group members</h2>
-      <div id="memberList"></div>
-      <div class="empty" id="memberEmpty" style="display:none;">No one added yet. Add your first check-in contact below.</div>
+      <h2>Groups</h2>
+      <p class="hint" style="margin-bottom:10px;">Organize your people into groups (e.g. Family, Hiking Buddies) and toggle a whole group on or off at once — from here or the Send tab.</p>
+      <div id="groupList"></div>
       <div class="divider"></div>
+      <div class="form-grid">
+        <div class="field">
+          <label for="newGroupName">New group name</label>
+          <input type="text" id="newGroupName" placeholder="e.g. Hiking Buddies" />
+        </div>
+        <button class="btn accent" id="addGroupBtn">Add group</button>
+      </div>
+    </div>
+
+    <div id="memberGroupsContainer"></div>
+
+    <div class="card">
+      <h2>Add a member</h2>
 
       <div id="contactPickerRow" style="display:none; margin-bottom:14px;">
         <button class="btn accent" id="pickContactsBtn">Add from Contacts</button>
-        <p class="hint" style="margin-top:8px;">Pick one or more people from your phone's contacts — name, number, and email (if saved) fill in automatically.</p>
+        <p class="hint" style="margin-top:8px;">Pick one or more people from your phone's contacts — name, number, and email (if saved) fill in automatically, into the group selected below.</p>
       </div>
       <p class="hint" id="contactPickerUnsupported" style="display:none; margin-bottom:14px;">Picking straight from Contacts isn't available in this browser yet — as of now it only works in Chrome on Android. Add people manually below instead.</p>
 
@@ -367,6 +395,10 @@
             <label for="newEmail">Email (optional)</label>
             <input type="email" id="newEmail" placeholder="for email fallback" />
           </div>
+        </div>
+        <div class="field">
+          <label for="newMemberGroup">Group</label>
+          <select id="newMemberGroup"></select>
         </div>
         <button class="btn accent" id="addMemberBtn">Add member</button>
       </div>
@@ -478,6 +510,10 @@
           <input type="email" id="editEmail" />
         </div>
       </div>
+      <div class="field">
+        <label for="editGroup">Group</label>
+        <select id="editGroup"></select>
+      </div>
     </div>
     <div class="btn-row">
       <button class="btn accent" id="editSaveBtn">Save</button>
@@ -497,6 +533,7 @@
   function defaultState() {
     return {
       armed: true,
+      groups: [{ id: uid(), name: "My Group", enabled: true }],
       members: [],
       messages: {
         first: { label: "HootieHoo", body: "HootieHoo Owls In The Sky" },
@@ -516,9 +553,18 @@
       if (!raw) return defaultState();
       var parsed = JSON.parse(raw);
       var d = defaultState();
+      var groups = Array.isArray(parsed.groups) && parsed.groups.length > 0
+        ? parsed.groups.map(function (g) { return Object.assign({ id: uid(), name: "Group", enabled: true }, g); })
+        : d.groups;
+      var members = Array.isArray(parsed.members) ? parsed.members : d.members;
+      var groupIds = groups.map(function (g) { return g.id; });
+      members.forEach(function (m) {
+        if (!m.groupId || groupIds.indexOf(m.groupId) === -1) m.groupId = groups[0].id;
+      });
       return {
         armed: typeof parsed.armed === "boolean" ? parsed.armed : d.armed,
-        members: Array.isArray(parsed.members) ? parsed.members : d.members,
+        groups: groups,
+        members: members,
         messages: Object.assign({}, d.messages, parsed.messages, {
           first: Object.assign({}, d.messages.first, parsed.messages && parsed.messages.first),
           second: Object.assign({}, d.messages.second, parsed.messages && parsed.messages.second),
@@ -538,6 +584,7 @@
   function save() {
     var toSave = {
       armed: state.armed,
+      groups: state.groups,
       members: state.members,
       messages: state.messages,
       channel: state.channel,
@@ -579,8 +626,17 @@
     return (p || "").replace(/[^\d+]/g, "");
   }
 
+  function memberGroup(m) {
+    return state.groups.find(function (g) { return g.id === m.groupId; });
+  }
+
+  function isMemberActive(m) {
+    var g = memberGroup(m);
+    return !!m.enabled && (!g || g.enabled);
+  }
+
   function enabledMembers() {
-    return state.members.filter(function (m) { return m.enabled; });
+    return state.members.filter(isMemberActive);
   }
 
   function buildLink(which) {
@@ -711,6 +767,22 @@
     var members = state.members;
     var enabled = enabledMembers();
     $("recipientCount").textContent = enabled.length + " of " + members.length + " enabled";
+
+    var groupChips = $("groupToggleChips");
+    groupChips.innerHTML = "";
+    state.groups.forEach(function (g) {
+      var btn = document.createElement("button");
+      btn.className = "chip-toggle" + (g.enabled ? " on" : "");
+      btn.textContent = g.name;
+      btn.addEventListener("click", function () {
+        g.enabled = !g.enabled;
+        save();
+        renderSend();
+        renderGroupList();
+      });
+      groupChips.appendChild(btn);
+    });
+
     var chips = $("recipientChips");
     chips.innerHTML = "";
     if (members.length === 0) {
@@ -718,7 +790,7 @@
     } else {
       members.forEach(function (m) {
         var c = document.createElement("span");
-        c.className = "chip" + (m.enabled ? "" : " off");
+        c.className = "chip" + (isMemberActive(m) ? "" : " off");
         c.textContent = m.name || m.phone || "(unnamed)";
         chips.appendChild(c);
       });
@@ -747,31 +819,143 @@
     });
   }
 
-  // ---------- Members ----------
+  // ---------- Groups & Members ----------
   function renderMembers() {
-    var list = $("memberList");
-    list.innerHTML = "";
-    $("memberEmpty").style.display = state.members.length === 0 ? "block" : "none";
-    state.members.forEach(function (m) {
+    renderGroupList();
+    renderMemberGroupCards();
+    renderGroupSelectOptions();
+  }
+
+  function renderGroupList() {
+    var wrap = $("groupList");
+    wrap.innerHTML = "";
+    state.groups.forEach(function (g) {
+      var count = state.members.filter(function (m) { return m.groupId === g.id; }).length;
       var row = document.createElement("div");
       row.className = "member-row";
-      var sub = m.phone || "";
-      if (m.email) sub += (sub ? " · " : "") + m.email;
       row.innerHTML =
-        '<div class="info"><div class="name"></div><div class="phone"></div></div>' +
-        '<button class="switch' + (m.enabled ? " on" : "") + '"><span class="knob"></span></button>';
-      row.querySelector(".name").textContent = m.name || "(unnamed)";
-      row.querySelector(".phone").textContent = sub;
-      row.querySelector(".info").addEventListener("click", function () { openEdit(m.id); });
-      row.querySelector(".switch").addEventListener("click", function () {
-        m.enabled = !m.enabled;
+        '<div class="info">' +
+          '<input type="text" class="group-name-input" />' +
+          '<div class="phone"></div>' +
+        '</div>' +
+        '<button class="switch' + (g.enabled ? " on" : "") + '"><span class="knob"></span></button>' +
+        '<button class="btn danger small" style="margin-left:8px;">Delete</button>';
+      var nameInput = row.querySelector(".group-name-input");
+      nameInput.value = g.name;
+      row.querySelector(".phone").textContent = count + " member" + (count === 1 ? "" : "s");
+      nameInput.addEventListener("input", function () {
+        g.name = nameInput.value || "Group";
         save();
-        renderMembers();
+        renderMemberGroupCards();
+        renderGroupSelectOptions();
         renderSend();
       });
-      list.appendChild(row);
+      row.querySelector(".switch").addEventListener("click", function () {
+        g.enabled = !g.enabled;
+        save();
+        renderSend();
+      });
+      row.querySelector(".btn.danger").addEventListener("click", function () {
+        deleteGroup(g.id);
+      });
+      wrap.appendChild(row);
     });
   }
+
+  function deleteGroup(id) {
+    if (state.groups.length <= 1) {
+      toast("You need at least one group — rename it instead of deleting it");
+      return;
+    }
+    var g = state.groups.find(function (x) { return x.id === id; });
+    if (!g) return;
+    var memberCount = state.members.filter(function (m) { return m.groupId === id; }).length;
+    var msg = memberCount > 0
+      ? 'Delete "' + g.name + '"? Its ' + memberCount + ' member' + (memberCount === 1 ? "" : "s") + ' will move to another group, not be deleted.'
+      : 'Delete "' + g.name + '"?';
+    if (!confirm(msg)) return;
+    state.groups = state.groups.filter(function (x) { return x.id !== id; });
+    var fallback = state.groups[0];
+    state.members.forEach(function (m) {
+      if (m.groupId === id) m.groupId = fallback.id;
+    });
+    save();
+    renderMembers();
+    renderSend();
+    toast("Group deleted" + (memberCount > 0 ? ' — members moved to "' + fallback.name + '"' : ""));
+  }
+
+  function renderMemberGroupCards() {
+    var container = $("memberGroupsContainer");
+    container.innerHTML = "";
+    state.groups.forEach(function (g) {
+      var groupMembers = state.members.filter(function (m) { return m.groupId === g.id; });
+      var enabledCount = groupMembers.filter(function (m) { return m.enabled; }).length;
+      var card = document.createElement("div");
+      card.className = "card";
+      card.innerHTML =
+        "<h2>" + escapeHtml(g.name) + ' <span class="count">' + enabledCount + " of " + groupMembers.length + ' enabled</span></h2>' +
+        '<div class="member-list"></div>' +
+        '<div class="empty" style="display:none;">No members in this group yet — add one below.</div>';
+      var list = card.querySelector(".member-list");
+      var empty = card.querySelector(".empty");
+      if (groupMembers.length === 0) {
+        empty.style.display = "block";
+      } else {
+        groupMembers.forEach(function (m) { list.appendChild(buildMemberRow(m)); });
+      }
+      container.appendChild(card);
+    });
+  }
+
+  function buildMemberRow(m) {
+    var row = document.createElement("div");
+    row.className = "member-row";
+    var sub = m.phone || "";
+    if (m.email) sub += (sub ? " · " : "") + m.email;
+    row.innerHTML =
+      '<div class="info"><div class="name"></div><div class="phone"></div></div>' +
+      '<button class="switch' + (m.enabled ? " on" : "") + '"><span class="knob"></span></button>';
+    row.querySelector(".name").textContent = m.name || "(unnamed)";
+    row.querySelector(".phone").textContent = sub;
+    row.querySelector(".info").addEventListener("click", function () { openEdit(m.id); });
+    row.querySelector(".switch").addEventListener("click", function () {
+      m.enabled = !m.enabled;
+      save();
+      renderMemberGroupCards();
+      renderSend();
+    });
+    return row;
+  }
+
+  function renderGroupSelectOptions() {
+    [$("newMemberGroup"), $("editGroup")].forEach(function (sel) {
+      if (!sel) return;
+      var prevValue = sel.value;
+      sel.innerHTML = "";
+      state.groups.forEach(function (g) {
+        var opt = document.createElement("option");
+        opt.value = g.id;
+        opt.textContent = g.name;
+        sel.appendChild(opt);
+      });
+      if (state.groups.some(function (g) { return g.id === prevValue; })) sel.value = prevValue;
+    });
+  }
+
+  $("addGroupBtn").addEventListener("click", function () {
+    var name = $("newGroupName").value.trim();
+    if (!name) {
+      toast("Name the group first");
+      return;
+    }
+    state.groups.push({ id: uid(), name: name, enabled: true });
+    $("newGroupName").value = "";
+    save();
+    renderMembers();
+    renderSend();
+    toast('Added group "' + name + '"');
+  });
 
   // ---------- Contact picker ----------
   var contactPickerSupported = !!(navigator.contacts && navigator.contacts.select && window.ContactsManager);
@@ -806,7 +990,8 @@
             (email && m.email && m.email.toLowerCase() === email.toLowerCase());
         });
         if (dup) return;
-        state.members.push({ id: uid(), name: name, phone: phone, email: email, enabled: true });
+        var groupId = ($("newMemberGroup") && $("newMemberGroup").value) || state.groups[0].id;
+        state.members.push({ id: uid(), name: name, phone: phone, email: email, enabled: true, groupId: groupId });
         added++;
       });
       if (added > 0) {
@@ -832,7 +1017,8 @@
       toast("Add a name and at least a phone or email");
       return;
     }
-    state.members.push({ id: uid(), name: name, phone: phone, email: email, enabled: true });
+    var groupId = $("newMemberGroup").value || state.groups[0].id;
+    state.members.push({ id: uid(), name: name, phone: phone, email: email, enabled: true, groupId: groupId });
     $("newName").value = "";
     $("newPhone").value = "";
     $("newEmail").value = "";
@@ -849,6 +1035,7 @@
     $("editName").value = m.name || "";
     $("editPhone").value = m.phone || "";
     $("editEmail").value = m.email || "";
+    $("editGroup").value = m.groupId;
     $("editBackdrop").classList.add("show");
   }
   function closeEdit() {
@@ -865,6 +1052,7 @@
     m.name = $("editName").value.trim();
     m.phone = $("editPhone").value.trim();
     m.email = $("editEmail").value.trim();
+    m.groupId = $("editGroup").value || m.groupId;
     save();
     renderMembers();
     renderSend();
