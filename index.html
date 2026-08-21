@@ -377,7 +377,7 @@
 
       <div id="contactPickerRow" style="display:none; margin-bottom:14px;">
         <button class="btn accent" id="pickContactsBtn">Add from Contacts</button>
-        <p class="hint" style="margin-top:8px;">Pick one or more people from your phone's contacts — name, number, and email (if saved) fill in automatically, into the group selected below.</p>
+        <p class="hint" style="margin-top:8px;">Pick one or more people from your phone's contacts — name, number, and email (if saved) fill in automatically. You'll be asked which group(s) to add them to next.</p>
       </div>
       <p class="hint" id="contactPickerUnsupported" style="display:none; margin-bottom:14px;">Picking straight from Contacts isn't available in this browser yet — as of now it only works in Chrome on Android. Add people manually below instead.</p>
 
@@ -397,8 +397,8 @@
           </div>
         </div>
         <div class="field">
-          <label for="newMemberGroup">Group</label>
-          <select id="newMemberGroup"></select>
+          <label>Groups (tap all that apply)</label>
+          <div class="chip-row" id="newMemberGroups"></div>
         </div>
         <button class="btn accent" id="addMemberBtn">Add member</button>
       </div>
@@ -511,8 +511,8 @@
         </div>
       </div>
       <div class="field">
-        <label for="editGroup">Group</label>
-        <select id="editGroup"></select>
+        <label>Groups (tap all that apply)</label>
+        <div class="chip-row" id="editGroups"></div>
       </div>
     </div>
     <div class="btn-row">
@@ -528,8 +528,8 @@
     <h3>Add to which group?</h3>
     <p class="hint" id="contactGroupSummary"></p>
     <div class="field">
-      <label for="contactGroupSelect">Group</label>
-      <select id="contactGroupSelect"></select>
+      <label>Groups (tap all that apply)</label>
+      <div class="chip-row" id="contactGroupChecks"></div>
     </div>
     <div class="btn-row">
       <button class="btn accent" id="contactGroupConfirmBtn">Add</button>
@@ -572,9 +572,13 @@
         ? parsed.groups.map(function (g) { return Object.assign({ id: uid(), name: "Group", enabled: true }, g); })
         : d.groups;
       var members = Array.isArray(parsed.members) ? parsed.members : d.members;
-      var groupIds = groups.map(function (g) { return g.id; });
+      var validGroupIds = groups.map(function (g) { return g.id; });
       members.forEach(function (m) {
-        if (!m.groupId || groupIds.indexOf(m.groupId) === -1) m.groupId = groups[0].id;
+        var ids = Array.isArray(m.groupIds) ? m.groupIds.slice() : (m.groupId ? [m.groupId] : []);
+        ids = ids.filter(function (gid) { return validGroupIds.indexOf(gid) !== -1; });
+        if (ids.length === 0) ids = [groups[0].id];
+        m.groupIds = ids;
+        delete m.groupId;
       });
       return {
         armed: typeof parsed.armed === "boolean" ? parsed.armed : d.armed,
@@ -641,13 +645,14 @@
     return (p || "").replace(/[^\d+]/g, "");
   }
 
-  function memberGroup(m) {
-    return state.groups.find(function (g) { return g.id === m.groupId; });
-  }
-
   function isMemberActive(m) {
-    var g = memberGroup(m);
-    return !!m.enabled && (!g || g.enabled);
+    var ids = m.groupIds || [];
+    if (ids.length === 0) return !!m.enabled;
+    var anyGroupOn = ids.some(function (gid) {
+      var g = state.groups.find(function (x) { return x.id === gid; });
+      return !g || g.enabled;
+    });
+    return !!m.enabled && anyGroupOn;
   }
 
   function enabledMembers() {
@@ -835,17 +840,44 @@
   }
 
   // ---------- Groups & Members ----------
+  function groupCheckboxRow(containerId, selectedIds) {
+    var wrap = $(containerId);
+    if (!wrap) return;
+    wrap.innerHTML = "";
+    state.groups.forEach(function (g) {
+      var btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "chip-toggle" + (selectedIds.indexOf(g.id) !== -1 ? " on" : "");
+      btn.textContent = g.name;
+      btn.dataset.groupId = g.id;
+      btn.addEventListener("click", function () {
+        btn.classList.toggle("on");
+      });
+      wrap.appendChild(btn);
+    });
+  }
+
+  function checkedGroupIds(containerId) {
+    var wrap = $(containerId);
+    if (!wrap) return [];
+    return Array.prototype.map.call(wrap.querySelectorAll(".chip-toggle.on"), function (b) {
+      return b.dataset.groupId;
+    });
+  }
+
   function renderMembers() {
     renderGroupList();
     renderMemberGroupCards();
-    renderGroupSelectOptions();
+    var current = checkedGroupIds("newMemberGroups");
+    if (current.length === 0 && state.groups.length > 0) current = [state.groups[0].id];
+    groupCheckboxRow("newMemberGroups", current);
   }
 
   function renderGroupList() {
     var wrap = $("groupList");
     wrap.innerHTML = "";
     state.groups.forEach(function (g) {
-      var count = state.members.filter(function (m) { return m.groupId === g.id; }).length;
+      var count = state.members.filter(function (m) { return (m.groupIds || []).indexOf(g.id) !== -1; }).length;
       var row = document.createElement("div");
       row.className = "member-row";
       row.innerHTML =
@@ -862,7 +894,8 @@
         g.name = nameInput.value || "Group";
         save();
         renderMemberGroupCards();
-        renderGroupSelectOptions();
+        var current = checkedGroupIds("newMemberGroups");
+        groupCheckboxRow("newMemberGroups", current);
         renderSend();
       });
       row.querySelector(".switch").addEventListener("click", function () {
@@ -884,27 +917,28 @@
     }
     var g = state.groups.find(function (x) { return x.id === id; });
     if (!g) return;
-    var memberCount = state.members.filter(function (m) { return m.groupId === id; }).length;
+    var memberCount = state.members.filter(function (m) { return (m.groupIds || []).indexOf(id) !== -1; }).length;
     var msg = memberCount > 0
-      ? 'Delete "' + g.name + '"? Its ' + memberCount + ' member' + (memberCount === 1 ? "" : "s") + ' will move to another group, not be deleted.'
+      ? 'Delete "' + g.name + '"? Any of its ' + memberCount + ' member' + (memberCount === 1 ? "" : "s") + ' left with no other group will move to another group, not be deleted.'
       : 'Delete "' + g.name + '"?';
     if (!confirm(msg)) return;
     state.groups = state.groups.filter(function (x) { return x.id !== id; });
     var fallback = state.groups[0];
     state.members.forEach(function (m) {
-      if (m.groupId === id) m.groupId = fallback.id;
+      m.groupIds = (m.groupIds || []).filter(function (gid) { return gid !== id; });
+      if (m.groupIds.length === 0) m.groupIds = [fallback.id];
     });
     save();
     renderMembers();
     renderSend();
-    toast("Group deleted" + (memberCount > 0 ? ' — members moved to "' + fallback.name + '"' : ""));
+    toast("Group deleted");
   }
 
   function renderMemberGroupCards() {
     var container = $("memberGroupsContainer");
     container.innerHTML = "";
     state.groups.forEach(function (g) {
-      var groupMembers = state.members.filter(function (m) { return m.groupId === g.id; });
+      var groupMembers = state.members.filter(function (m) { return (m.groupIds || []).indexOf(g.id) !== -1; });
       var enabledCount = groupMembers.filter(function (m) { return m.enabled; }).length;
       var card = document.createElement("div");
       card.className = "card";
@@ -941,21 +975,6 @@
       renderSend();
     });
     return row;
-  }
-
-  function renderGroupSelectOptions() {
-    [$("newMemberGroup"), $("editGroup"), $("contactGroupSelect")].forEach(function (sel) {
-      if (!sel) return;
-      var prevValue = sel.value;
-      sel.innerHTML = "";
-      state.groups.forEach(function (g) {
-        var opt = document.createElement("option");
-        opt.value = g.id;
-        opt.textContent = g.name;
-        sel.appendChild(opt);
-      });
-      if (state.groups.some(function (g) { return g.id === prevValue; })) sel.value = prevValue;
-    });
   }
 
   $("addGroupBtn").addEventListener("click", function () {
@@ -1021,7 +1040,7 @@
     pendingContacts = parsed;
     var names = parsed.map(function (c) { return c.name || c.phone || c.email; }).join(", ");
     $("contactGroupSummary").textContent = "Adding " + parsed.length + " contact" + (parsed.length === 1 ? "" : "s") + ": " + names;
-    renderGroupSelectOptions();
+    groupCheckboxRow("contactGroupChecks", state.groups.length ? [state.groups[0].id] : []);
     $("contactGroupBackdrop").classList.add("show");
   }
 
@@ -1037,7 +1056,11 @@
 
   $("contactGroupConfirmBtn").addEventListener("click", function () {
     if (!pendingContacts) return;
-    var groupId = $("contactGroupSelect").value || state.groups[0].id;
+    var groupIds = checkedGroupIds("contactGroupChecks");
+    if (groupIds.length === 0) {
+      toast("Pick at least one group");
+      return;
+    }
     var added = 0;
     pendingContacts.forEach(function (c) {
       var dup = state.members.some(function (m) {
@@ -1045,7 +1068,7 @@
           (c.email && m.email && m.email.toLowerCase() === c.email.toLowerCase());
       });
       if (dup) return;
-      state.members.push({ id: uid(), name: c.name, phone: c.phone, email: c.email, enabled: true, groupId: groupId });
+      state.members.push({ id: uid(), name: c.name, phone: c.phone, email: c.email, enabled: true, groupIds: groupIds.slice() });
       added++;
     });
     closeContactGroupConfirm();
@@ -1065,8 +1088,12 @@
       toast("Add a name and at least a phone or email");
       return;
     }
-    var groupId = $("newMemberGroup").value || state.groups[0].id;
-    state.members.push({ id: uid(), name: name, phone: phone, email: email, enabled: true, groupId: groupId });
+    var groupIds = checkedGroupIds("newMemberGroups");
+    if (groupIds.length === 0) {
+      toast("Pick at least one group");
+      return;
+    }
+    state.members.push({ id: uid(), name: name, phone: phone, email: email, enabled: true, groupIds: groupIds });
     $("newName").value = "";
     $("newPhone").value = "";
     $("newEmail").value = "";
@@ -1083,7 +1110,7 @@
     $("editName").value = m.name || "";
     $("editPhone").value = m.phone || "";
     $("editEmail").value = m.email || "";
-    $("editGroup").value = m.groupId;
+    groupCheckboxRow("editGroups", m.groupIds || []);
     $("editBackdrop").classList.add("show");
   }
   function closeEdit() {
@@ -1097,10 +1124,15 @@
   $("editSaveBtn").addEventListener("click", function () {
     var m = state.members.find(function (x) { return x.id === state.editingId; });
     if (!m) return;
+    var groupIds = checkedGroupIds("editGroups");
+    if (groupIds.length === 0) {
+      toast("Pick at least one group");
+      return;
+    }
     m.name = $("editName").value.trim();
     m.phone = $("editPhone").value.trim();
     m.email = $("editEmail").value.trim();
-    m.groupId = $("editGroup").value || m.groupId;
+    m.groupIds = groupIds;
     save();
     renderMembers();
     renderSend();
