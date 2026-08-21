@@ -2,19 +2,16 @@
 
 A personal check-in shortcut: one home-screen icon, two pre-written messages, sent to whichever people in your group are currently turned on.
 
-Tap the "HootieHoo" button before you head out; tap "Resume Life" when you're back. Each tap opens your phone's Messages (or Mail) app with everyone enabled already filled in, so getting the word out is a two-tap job instead of typing it out each time.
+Tap the red "HootieHoo Owls In The Sky" button before you head out; tap the green "The Owls Are Sleeping" button when you're back. Each tap opens your phone's Messages (or Mail) app with everyone enabled already filled in, so getting the word out is a two-tap job instead of typing it out each time.
 
 ## What it does
 
-- **Send (the dashboard)** — a dark, illuminated-button control panel: a red circular HootieHoo button and a green circular Resume Life (all-clear) button. Whichever you're expected to send next pulses "Next," but either is always tappable — useful if you need to re-send or skip straight to the all-clear. A running local activity log shows what was opened and when (it can't confirm the message actually went out — see below).
-- **System armed / standby toggle** — a master switch at the top of the dashboard. Flip it to Standby to dim both buttons and block taps entirely, without touching your members, messages, or schedule — a quick "off" for whenever you don't want this thing live.
+- **Send (the dashboard)** — a dark, illuminated-button control panel: a red circular button and a green circular all-clear button, with fully editable labels and text (Settings). Whichever you're expected to send next pulses "Next," but either is always tappable — useful if you need to re-send or skip straight to the all-clear. A running local activity log shows what was opened and when (it can't confirm the message actually went out — see below).
+- **System armed / standby toggle** — a master switch at the top of the dashboard. Flip it to Standby to dim both buttons and block taps entirely, without touching your members or messages — a quick "off" for whenever you don't want this thing live.
 - **Members** — add people with a phone number and/or email, and flip any one of them off without deleting them — handy for "not this trip" without losing their info.
-- **Schedule** — optionally restrict the buttons to certain days and a time window (e.g. only during daylight hours). Outside that window the buttons turn amber with a lock icon, but a "send anyway" override is always one tap away — a schedule is a nudge, not a lockout. Important: this only gates *your* phone — see below for what it can't do.
 - **Settings** — edit both message texts and button labels, and choose whether messages go out as a group text (SMS) or email (bcc). Email is a useful fallback for a contact without a phone number, or when group SMS gets flaky across a mix of iPhone and Android.
 
-## What the Schedule can't do
-
-The Schedule tab only controls whether **you** can tap Send from this app — it decides nothing on your recipients' end. HootieHoo doesn't hold messages, queue them, or deliver them later; the moment you tap Send (in or out of your scheduled hours), the native Messages/Mail app sends it immediately, and it lands on every recipient's phone right away, same as any other text. There's no mechanism for a website to mute or schedule someone else's phone. If you don't want your group getting texts overnight, that has to be set on *their* phone (Do Not Disturb / Focus, with your contact allowed through or not) — HootieHoo has no way to do that for them.
+There's intentionally no schedule/quiet-hours feature: it could only ever gate *your* phone, not your recipients'. HootieHoo doesn't hold or queue messages — the moment you tap Send, the native Messages/Mail app sends it immediately, and it lands on every recipient's phone right away, same as any other text. There's no mechanism for a website to mute or delay delivery on someone else's phone, so a "schedule" here would only have been misleading.
 
 ## Installing it as a home-screen dashboard
 
@@ -28,7 +25,7 @@ Truly zero-tap, fire-and-forget sending is possible, but only via a paid SMS API
 
 ## Data and privacy
 
-Everything — members, messages, schedule, activity log — is stored **only in your browser's local storage** on the device you open it on. There's no account and no sync between devices. Nothing is sent anywhere except the message itself, and only once you tap Send in the app HootieHoo hands you off to.
+Everything — members, messages, activity log — is stored **only in your browser's local storage** on the device you open it on. There's no account and no sync between devices. Nothing is sent anywhere except the message itself, and only once you tap Send in the app HootieHoo hands you off to.
 
 Clearing your browser's site data for this page erases everything. There's no backup/export yet — worth adding if you end up relying on this.
 

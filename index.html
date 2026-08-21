@@ -26,8 +26,6 @@
     --success-soft: #123322;
     --danger: #e0685a;
     --danger-soft: #2c1614;
-    --amber: #e3a63f;
-    --amber-soft: #2c210f;
     --neutral-pill: #8b96aa;
     --neutral-pill-soft: #17202d;
     --shadow: rgba(0, 0, 0, 0.5);
@@ -42,11 +40,6 @@
     --green-mid: #2f9f63;
     --green-dim: #123322;
     --green-glow: rgba(47, 159, 99, 0.5);
-
-    --amber-hi: #f5d491;
-    --amber-mid: #c98f2c;
-    --amber-dim: #332510;
-    --amber-glow: rgba(201, 143, 44, 0.4);
 
     --unlit-hi: #4a5262;
     --unlit-mid: #2c3340;
@@ -136,7 +129,6 @@
   }
   .circle-btn:active { transform: scale(0.96); }
   .circle-btn.green { --hi: var(--green-hi); --mid: var(--green-mid); --dim: var(--green-dim); --glow: var(--green-glow); }
-  .circle-btn.locked { --hi: var(--amber-hi); --mid: var(--amber-mid); --dim: var(--amber-dim); --glow: var(--amber-glow); }
   .circle-btn.unlit {
     --hi: var(--unlit-hi); --mid: var(--unlit-mid); --dim: var(--unlit-dim); --glow: var(--unlit-glow);
     cursor: not-allowed;
@@ -169,16 +161,6 @@
   .preview-tag.red { color: var(--red-mid); }
   .preview-tag.green { color: var(--green-mid); }
   .preview-text { font-size: 13.5px; color: var(--ink-muted); line-height: 1.4; }
-
-  .status-row {
-    display: flex; align-items: center; gap: 8px;
-    font-family: var(--font-mono);
-    font-size: 12.5px; letter-spacing: 0.02em; color: var(--ink-muted);
-    padding: 10px 12px; border-radius: 10px; background: var(--panel-alt);
-  }
-  .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--success); flex: none; }
-  .status-row.blocked .status-dot { background: var(--amber); }
-  .status-row.blocked { color: var(--amber); background: var(--amber-soft); }
 
   .btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
   .btn {
@@ -226,13 +208,6 @@
   .field textarea { resize: vertical; min-height: 56px; }
   .form-grid { display: flex; flex-direction: column; gap: 10px; }
   .form-grid.two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-
-  .day-picker { display: flex; gap: 6px; flex-wrap: wrap; }
-  .day-btn {
-    width: 38px; height: 38px; border-radius: 10px; border: 1px solid var(--border);
-    background: var(--panel-alt); color: var(--ink-muted); font-size: 12.5px; cursor: pointer;
-  }
-  .day-btn.on { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
 
   .empty { color: var(--ink-faint); font-size: 13.5px; padding: 8px 0; }
   .hint { font-size: 12.5px; color: var(--ink-faint); line-height: 1.5; }
@@ -295,29 +270,24 @@
 
     <div class="dash-circles">
       <button class="circle-btn red" id="btnFirst">
-        <span class="cb-label" id="firstLabel">HootieHoo</span>
+        <span class="cb-label" id="firstLabel">HootieHoo Owls In The Sky</span>
         <span class="cb-sub" id="firstBadge">Next</span>
       </button>
       <button class="circle-btn green" id="btnSecond">
-        <span class="cb-label" id="secondLabel">Resume Life</span>
+        <span class="cb-label" id="secondLabel">The Owls Are Sleeping</span>
         <span class="cb-sub" id="secondBadge">Send</span>
       </button>
-    </div>
-
-    <div id="scheduleStatus" class="status-row">
-      <span class="status-dot"></span>
-      <span id="scheduleStatusText">Always active — no schedule set</span>
     </div>
 
     <div class="card">
       <h2>Message preview</h2>
       <div class="preview-row">
         <span class="preview-tag red">&#9679;</span>
-        <span class="preview-text" id="firstPreview">HootieHoo — heading out now.</span>
+        <span class="preview-text" id="firstPreview">HootieHoo Owls In The Sky</span>
       </div>
       <div class="preview-row">
         <span class="preview-tag green">&#9679;</span>
-        <span class="preview-text" id="secondPreview">Resume Life — I'm back, all clear.</span>
+        <span class="preview-text" id="secondPreview">The Owls Are Sleeping</span>
       </div>
     </div>
 
@@ -357,40 +327,6 @@
         </div>
         <button class="btn accent" id="addMemberBtn">Add member</button>
       </div>
-    </div>
-  </section>
-
-  <!-- SCHEDULE -->
-  <section class="view" id="view-schedule">
-    <div class="card">
-      <h2>Active hours</h2>
-      <div class="member-row" style="border:none; padding-top:0;">
-        <div class="info">
-          <div class="name">Restrict to a schedule</div>
-          <div class="phone">Off = the buttons always work, any time</div>
-        </div>
-        <button class="switch" id="scheduleToggle"><span class="knob"></span></button>
-      </div>
-      <div id="scheduleFields" style="display:none;">
-        <div class="divider"></div>
-        <div class="field" style="margin-bottom:12px;">
-          <label>Days</label>
-          <div class="day-picker" id="dayPicker"></div>
-        </div>
-        <div class="form-grid two">
-          <div class="field">
-            <label for="startTime">From</label>
-            <input type="time" id="startTime" />
-          </div>
-          <div class="field">
-            <label for="endTime">Until</label>
-            <input type="time" id="endTime" />
-          </div>
-        </div>
-        <p class="hint" style="margin-top:10px;">Outside these hours the buttons show a lock icon, but there's always a "tap again to send anyway" override — a schedule shouldn't get in the way of a real check-in.</p>
-      </div>
-      <div class="divider"></div>
-      <p class="hint">This only controls when <strong>you</strong> can send from this phone. It has no effect on the recipients' phones at all — once a text is sent, it lands the instant it's sent, on their end, the same as any other text message. There's no way for a website to schedule quiet hours on someone else's phone; if you want your group not to be notified overnight, that's a setting on <em>their</em> phone (Do Not Disturb / Focus for your contact), not something this app can set for them.</p>
     </div>
   </section>
 
@@ -438,7 +374,7 @@
     </div>
     <div class="card">
       <h2>Data</h2>
-      <p class="hint">Everything — members, messages, schedule, activity log — is stored only in this browser, on this device. Nothing is sent anywhere except the message itself, and only when you tap Send in the app that opens.</p>
+      <p class="hint">Everything — members, messages, activity log — is stored only in this browser, on this device. Nothing is sent anywhere except the message itself, and only when you tap Send in the app that opens.</p>
       <div class="btn-row" style="margin-top:10px;">
         <button class="btn danger" id="resetLogBtn">Clear activity log</button>
       </div>
@@ -449,7 +385,6 @@
 <nav class="tabs">
   <button class="active" data-view="send"><span class="ic">&#9679;</span>Send</button>
   <button data-view="members"><span class="ic">&#9737;</span>Members</button>
-  <button data-view="schedule"><span class="ic">&#9201;</span>Schedule</button>
   <button data-view="settings"><span class="ic">&#9881;</span>Settings</button>
 </nav>
 
@@ -486,7 +421,6 @@
 (function () {
   "use strict";
   var STORAGE_KEY = "hootiehoo.v1";
-  var DAY_LABELS = ["S", "M", "T", "W", "T", "F", "S"];
 
   function uid() { return Math.random().toString(36).slice(2, 10); }
 
@@ -495,10 +429,9 @@
       armed: true,
       members: [],
       messages: {
-        first: { label: "HootieHoo", body: "HootieHoo — heading out now." },
-        second: { label: "Resume Life", body: "Resume Life — I'm back, all clear." }
+        first: { label: "HootieHoo Owls In The Sky", body: "HootieHoo Owls In The Sky" },
+        second: { label: "The Owls Are Sleeping", body: "The Owls Are Sleeping" }
       },
-      schedule: { enabled: false, days: [0, 1, 2, 3, 4, 5, 6], start: "07:00", end: "22:00" },
       channel: "sms",
       nextWhich: "first",
       log: [],
@@ -519,7 +452,6 @@
           first: Object.assign({}, d.messages.first, parsed.messages && parsed.messages.first),
           second: Object.assign({}, d.messages.second, parsed.messages && parsed.messages.second)
         }),
-        schedule: Object.assign({}, d.schedule, parsed.schedule),
         channel: parsed.channel === "email" ? "email" : "sms",
         nextWhich: parsed.nextWhich === "second" ? "second" : "first",
         log: Array.isArray(parsed.log) ? parsed.log.slice(0, 25) : []
@@ -536,7 +468,6 @@
       armed: state.armed,
       members: state.members,
       messages: state.messages,
-      schedule: state.schedule,
       channel: state.channel,
       nextWhich: state.nextWhich,
       log: state.log.slice(0, 25)
@@ -571,39 +502,6 @@
     renderSend();
   });
 
-  // ---------- Schedule logic ----------
-  function isWithinSchedule(now) {
-    var s = state.schedule;
-    if (!s.enabled) return true;
-    now = now || new Date();
-    var day = now.getDay();
-    if (s.days.indexOf(day) === -1) return false;
-    var mins = now.getHours() * 60 + now.getMinutes();
-    var startParts = s.start.split(":").map(Number);
-    var endParts = s.end.split(":").map(Number);
-    var start = startParts[0] * 60 + startParts[1];
-    var end = endParts[0] * 60 + endParts[1];
-    if (start <= end) return mins >= start && mins <= end;
-    return mins >= start || mins <= end; // overnight window
-  }
-
-  function renderScheduleStatus() {
-    var row = $("scheduleStatus");
-    var text = $("scheduleStatusText");
-    var within = isWithinSchedule();
-    if (!state.schedule.enabled) {
-      row.classList.remove("blocked");
-      text.textContent = "Always active — no schedule set";
-    } else if (within) {
-      row.classList.remove("blocked");
-      text.textContent = "Active now — " + state.schedule.start + "–" + state.schedule.end;
-    } else {
-      row.classList.add("blocked");
-      text.textContent = "Outside active hours (" + state.schedule.start + "–" + state.schedule.end + ") — tap Send anyway to override";
-    }
-    return within;
-  }
-
   // ---------- Send ----------
   function normalizePhone(p) {
     return (p || "").replace(/[^\d+]/g, "");
@@ -632,22 +530,11 @@
     return members.filter(function (m) { return m.phone; }).length;
   }
 
-  var pendingOverride = null;
-
-  function doSend(which, opts) {
-    opts = opts || {};
+  function doSend(which) {
     if (!state.armed) {
       toast("System disarmed — flip Armed on at the top to send");
       return;
     }
-    if (!opts.override && !isWithinSchedule()) {
-      toast("Outside active hours — tap again to send anyway");
-      renderScheduleStatus();
-      pendingOverride = which;
-      renderSend();
-      return;
-    }
-    pendingOverride = null;
     var ready = recipientReadyCount();
     if (ready === 0) {
       toast("No enabled recipients have a " + (state.channel === "email" ? "email" : "phone number") + " — check Members");
@@ -662,12 +549,8 @@
     renderSend();
   }
 
-  $("btnFirst").addEventListener("click", function () {
-    doSend("first", { override: pendingOverride === "first" });
-  });
-  $("btnSecond").addEventListener("click", function () {
-    doSend("second", { override: pendingOverride === "second" });
-  });
+  $("btnFirst").addEventListener("click", function () { doSend("first"); });
+  $("btnSecond").addEventListener("click", function () { doSend("second"); });
 
   function timeAgo(ts) {
     var mins = Math.round((Date.now() - ts) / 60000);
@@ -682,14 +565,11 @@
     var ready = recipientReadyCount();
     if (!state.armed) return { cls: "unlit", badge: "Off" };
     if (ready === 0) return { cls: "unlit", badge: "No recip." };
-    if (!isWithinSchedule() && pendingOverride !== which) return { cls: "locked", badge: "Locked — tap" };
     if (state.nextWhich === which) return { cls: "next", badge: "Next" };
     return { cls: "", badge: "Send" };
   }
 
   function renderSend() {
-    renderScheduleStatus();
-
     $("armStateText").textContent = state.armed ? "Armed" : "Standby";
     $("armStateText").classList.toggle("on", state.armed);
     $("armStateText").classList.toggle("off", !state.armed);
@@ -826,52 +706,6 @@
     closeEdit();
   });
 
-  // ---------- Schedule ----------
-  function renderDayPicker() {
-    var wrap = $("dayPicker");
-    wrap.innerHTML = "";
-    DAY_LABELS.forEach(function (label, idx) {
-      var btn = document.createElement("button");
-      btn.className = "day-btn" + (state.schedule.days.indexOf(idx) !== -1 ? " on" : "");
-      btn.textContent = label;
-      btn.addEventListener("click", function () {
-        var pos = state.schedule.days.indexOf(idx);
-        if (pos === -1) state.schedule.days.push(idx);
-        else state.schedule.days.splice(pos, 1);
-        save();
-        renderDayPicker();
-        renderSend();
-      });
-      wrap.appendChild(btn);
-    });
-  }
-
-  function renderSchedule() {
-    var on = state.schedule.enabled;
-    $("scheduleToggle").classList.toggle("on", on);
-    $("scheduleFields").style.display = on ? "block" : "none";
-    $("startTime").value = state.schedule.start;
-    $("endTime").value = state.schedule.end;
-    renderDayPicker();
-  }
-
-  $("scheduleToggle").addEventListener("click", function () {
-    state.schedule.enabled = !state.schedule.enabled;
-    save();
-    renderSchedule();
-    renderSend();
-  });
-  $("startTime").addEventListener("change", function () {
-    state.schedule.start = $("startTime").value || "00:00";
-    save();
-    renderSend();
-  });
-  $("endTime").addEventListener("change", function () {
-    state.schedule.end = $("endTime").value || "23:59";
-    save();
-    renderSend();
-  });
-
   // ---------- Settings ----------
   function renderSettings() {
     $("firstLabelInput").value = state.messages.first.label;
@@ -908,11 +742,6 @@
   // ---------- Init ----------
   renderSend();
   renderMembers();
-  renderSchedule();
   renderSettings();
-
-  setInterval(function () {
-    renderSend();
-  }, 30000);
 })();
 </script>
