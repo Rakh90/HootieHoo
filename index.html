@@ -106,8 +106,10 @@
   main { padding: 16px; max-width: 640px; margin: 0 auto; }
   .view { display: none; flex-direction: column; gap: 16px; }
   .view.active { display: flex; }
+  .screen { display: none; flex-direction: column; gap: 16px; }
+  .screen.active { display: flex; }
 
-  .card, .dash-armbar {
+  .card, .dash-armbar, .menu-row {
     background: var(--panel);
     border: 1px solid var(--border);
     border-radius: 6px;
@@ -115,13 +117,33 @@
     box-shadow: 0 1px 2px var(--shadow), inset 0 0 0 1px rgba(34,226,255,0.025);
     position: relative;
   }
-  .card::before, .dash-armbar::before,
-  .card::after, .dash-armbar::after {
+  .card::before, .dash-armbar::before, .menu-row::before,
+  .card::after, .dash-armbar::after, .menu-row::after {
     content: ""; position: absolute; width: 13px; height: 13px; pointer-events: none;
     border-color: var(--cyan); border-style: solid; opacity: 0.5;
   }
-  .card::before, .dash-armbar::before { top: -1px; left: -1px; border-width: 2px 0 0 2px; }
-  .card::after, .dash-armbar::after { bottom: -1px; right: -1px; border-width: 0 2px 2px 0; }
+  .card::before, .dash-armbar::before, .menu-row::before { top: -1px; left: -1px; border-width: 2px 0 0 2px; }
+  .card::after, .dash-armbar::after, .menu-row::after { bottom: -1px; right: -1px; border-width: 0 2px 2px 0; }
+
+  .menu-row {
+    display: flex; align-items: center; gap: 12px; width: 100%;
+    cursor: pointer; text-align: left; font-family: inherit;
+  }
+  .menu-row:active { border-color: var(--cyan); }
+  .menu-row .mr-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+  .menu-row .mr-title {
+    font-family: var(--font-mono); font-size: 13px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase;
+    color: var(--ink);
+  }
+  .menu-row .mr-sub { font-size: 11.5px; color: var(--ink-muted); }
+  .menu-row .mr-chevron { margin-left: auto; color: var(--cyan); font-size: 18px; flex: none; line-height: 1; }
+
+  .back-btn {
+    align-self: flex-start; background: transparent; border: 1px solid var(--border); border-radius: 4px;
+    color: var(--cyan); font-family: var(--font-mono); font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.05em;
+    padding: 8px 14px; cursor: pointer;
+  }
+  .back-btn:active { border-color: var(--cyan); }
   .card h2 {
     font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; font-weight: 600;
     color: var(--cyan); margin-bottom: 12px;
@@ -433,130 +455,196 @@
 
   <!-- MEMBERS -->
   <section class="view" id="view-members">
-    <div class="card">
-      <h2>Groups</h2>
-      <p class="hint" style="margin-bottom:10px;">Organize your people into groups (e.g. Family, Hiking Buddies) and toggle a whole group on or off at once — from here or the Send tab.</p>
-      <div id="groupList"></div>
-      <div class="divider"></div>
-      <div class="form-grid">
-        <div class="field">
-          <label for="newGroupName">New group name</label>
-          <input type="text" id="newGroupName" placeholder="e.g. Hiking Buddies" />
+    <div class="screen active" id="mscreen-menu">
+      <button class="menu-row" data-target="mscreen-groups">
+        <span class="mr-text">
+          <span class="mr-title">Groups</span>
+          <span class="mr-sub" id="menuGroupsSub">—</span>
+        </span>
+        <span class="mr-chevron">&rsaquo;</span>
+      </button>
+      <div id="menuGroupRows"></div>
+      <button class="menu-row" data-target="mscreen-add">
+        <span class="mr-text">
+          <span class="mr-title">Add a Member</span>
+          <span class="mr-sub">Manually, or from your phone's contacts</span>
+        </span>
+        <span class="mr-chevron">&rsaquo;</span>
+      </button>
+    </div>
+
+    <div class="screen" id="mscreen-groups">
+      <button class="back-btn" data-target="mscreen-menu">&lsaquo; Back</button>
+      <div class="card">
+        <h2>Groups</h2>
+        <p class="hint" style="margin-bottom:10px;">Organize your people into groups (e.g. Family, Hiking Buddies) and toggle a whole group on or off at once — from here or the Send tab.</p>
+        <div id="groupList"></div>
+        <div class="divider"></div>
+        <div class="form-grid">
+          <div class="field">
+            <label for="newGroupName">New group name</label>
+            <input type="text" id="newGroupName" placeholder="e.g. Hiking Buddies" />
+          </div>
+          <button class="btn accent" id="addGroupBtn">Add group</button>
         </div>
-        <button class="btn accent" id="addGroupBtn">Add group</button>
       </div>
     </div>
 
-    <div id="memberGroupsContainer"></div>
-
-    <div class="card">
-      <h2>Add a member</h2>
-
-      <div id="contactPickerRow" style="display:none; margin-bottom:14px;">
-        <button class="btn accent" id="pickContactsBtn">Add from Contacts</button>
-        <p class="hint" style="margin-top:8px;">Pick one or more people from your phone's contacts — name, number, and email (if saved) fill in automatically. You'll be asked which group(s) to add them to next.</p>
+    <div class="screen" id="mscreen-roster">
+      <button class="back-btn" data-target="mscreen-menu">&lsaquo; Back</button>
+      <div class="card">
+        <h2 id="rosterHeading">Group</h2>
+        <div id="rosterList"></div>
+        <div class="empty" id="rosterEmpty" style="display:none;">No members in this group yet — add one from the Members menu.</div>
       </div>
-      <p class="hint" id="contactPickerUnsupported" style="display:none; margin-bottom:14px;">Picking straight from Contacts isn't available in this browser yet — as of now it only works in Chrome on Android. Add people manually below instead.</p>
+    </div>
 
-      <div class="form-grid">
-        <div class="field">
-          <label for="newName">Name</label>
-          <input type="text" id="newName" placeholder="e.g. Mom" />
+    <div class="screen" id="mscreen-add">
+      <button class="back-btn" data-target="mscreen-menu">&lsaquo; Back</button>
+      <div class="card">
+        <h2>Add a member</h2>
+
+        <div id="contactPickerRow" style="display:none; margin-bottom:14px;">
+          <button class="btn accent" id="pickContactsBtn">Add from Contacts</button>
+          <p class="hint" style="margin-top:8px;">Pick one or more people from your phone's contacts — name, number, and email (if saved) fill in automatically. You'll be asked which group(s) to add them to next.</p>
         </div>
-        <div class="form-grid two">
+        <p class="hint" id="contactPickerUnsupported" style="display:none; margin-bottom:14px;">Picking straight from Contacts isn't available in this browser yet — as of now it only works in Chrome on Android. Add people manually below instead.</p>
+
+        <div class="form-grid">
           <div class="field">
-            <label for="newPhone">Phone</label>
-            <input type="tel" id="newPhone" placeholder="+15551234567" />
+            <label for="newName">Name</label>
+            <input type="text" id="newName" placeholder="e.g. Mom" />
+          </div>
+          <div class="form-grid two">
+            <div class="field">
+              <label for="newPhone">Phone</label>
+              <input type="tel" id="newPhone" placeholder="+15551234567" />
+            </div>
+            <div class="field">
+              <label for="newEmail">Email (optional)</label>
+              <input type="email" id="newEmail" placeholder="for email fallback" />
+            </div>
           </div>
           <div class="field">
-            <label for="newEmail">Email (optional)</label>
-            <input type="email" id="newEmail" placeholder="for email fallback" />
+            <label>Groups (tap all that apply)</label>
+            <div class="chip-row" id="newMemberGroups"></div>
           </div>
+          <button class="btn accent" id="addMemberBtn">Add member</button>
         </div>
-        <div class="field">
-          <label>Groups (tap all that apply)</label>
-          <div class="chip-row" id="newMemberGroups"></div>
-        </div>
-        <button class="btn accent" id="addMemberBtn">Add member</button>
       </div>
     </div>
   </section>
 
   <!-- SETTINGS -->
   <section class="view" id="view-settings">
-    <div class="card">
-      <h2>Message 1 — the "heads up" text</h2>
-      <div class="form-grid">
-        <div class="field">
-          <label for="firstLabelInput">Button title (short — this is all that shows on the circle)</label>
-          <input type="text" id="firstLabelInput" />
+    <div class="screen active" id="sscreen-menu">
+      <button class="menu-row" data-target="sscreen-messages">
+        <span class="mr-text">
+          <span class="mr-title">Messages</span>
+          <span class="mr-sub">Button text, send channel, notification info</span>
+        </span>
+        <span class="mr-chevron">&rsaquo;</span>
+      </button>
+      <button class="menu-row" data-target="sscreen-share">
+        <span class="mr-text">
+          <span class="mr-title">Share App</span>
+          <span class="mr-sub">Send the app link to your group</span>
+        </span>
+        <span class="mr-chevron">&rsaquo;</span>
+      </button>
+      <button class="menu-row" data-target="sscreen-data">
+        <span class="mr-text">
+          <span class="mr-title">Data</span>
+          <span class="mr-sub">Reset messages, clear activity log</span>
+        </span>
+        <span class="mr-chevron">&rsaquo;</span>
+      </button>
+    </div>
+
+    <div class="screen" id="sscreen-messages">
+      <button class="back-btn" data-target="sscreen-menu">&lsaquo; Back</button>
+      <div class="card">
+        <h2>Message 1 — the "heads up" text</h2>
+        <div class="form-grid">
+          <div class="field">
+            <label for="firstLabelInput">Button title (short — this is all that shows on the circle)</label>
+            <input type="text" id="firstLabelInput" />
+          </div>
+          <div class="field">
+            <label for="firstBodyInput">Message text (the full text that actually gets sent)</label>
+            <textarea id="firstBodyInput"></textarea>
+          </div>
         </div>
-        <div class="field">
-          <label for="firstBodyInput">Message text (the full text that actually gets sent)</label>
-          <textarea id="firstBodyInput"></textarea>
+      </div>
+      <div class="card">
+        <h2>Message 2 — the follow-up / all-clear</h2>
+        <div class="form-grid">
+          <div class="field">
+            <label for="secondLabelInput">Button title (short — this is all that shows on the circle)</label>
+            <input type="text" id="secondLabelInput" />
+          </div>
+          <div class="field">
+            <label for="secondBodyInput">Message text (the full text that actually gets sent)</label>
+            <textarea id="secondBodyInput"></textarea>
+          </div>
         </div>
+      </div>
+      <div class="card">
+        <h2>Message 3 — emergency (rare, needs a confirm tap)</h2>
+        <div class="form-grid">
+          <div class="field">
+            <label for="thirdLabelInput">Button title (short — this is all that shows on the circle)</label>
+            <input type="text" id="thirdLabelInput" />
+          </div>
+          <div class="field">
+            <label for="thirdBodyInput">Message text (the full text that actually gets sent)</label>
+            <textarea id="thirdBodyInput"></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Send via</h2>
+        <div class="field">
+          <select id="channelSelect">
+            <option value="sms">Text message (SMS group text)</option>
+            <option value="email">Email</option>
+          </select>
+        </div>
+        <p class="hint" style="margin-top:10px;">SMS opens a group text to everyone enabled. Email opens a draft bcc'd to everyone with an email address on file — useful for contacts without a phone number, or if group SMS isn't reliable between iPhone and Android in your group.</p>
+      </div>
+      <div class="card">
+        <h2>Notification sound</h2>
+        <p class="hint">Not something this app (or any website) can set — SMS and iMessage don't carry a "play this sound" instruction, so the sender has no control over it. Each recipient can give your number a distinct tone themselves: on iPhone, Contacts → your card → Edit → Text Tone. On Android it depends on the Messages app, usually under the contact's notification settings.</p>
       </div>
     </div>
-    <div class="card">
-      <h2>Message 2 — the follow-up / all-clear</h2>
-      <div class="form-grid">
+
+    <div class="screen" id="sscreen-share">
+      <button class="back-btn" data-target="sscreen-menu">&lsaquo; Back</button>
+      <div class="card">
+        <h2>Share this app</h2>
         <div class="field">
-          <label for="secondLabelInput">Button title (short — this is all that shows on the circle)</label>
-          <input type="text" id="secondLabelInput" />
+          <label for="appLinkInput">Link to this app</label>
+          <input type="text" id="appLinkInput" readonly />
         </div>
-        <div class="field">
-          <label for="secondBodyInput">Message text (the full text that actually gets sent)</label>
-          <textarea id="secondBodyInput"></textarea>
+        <div class="btn-row" style="margin-top:10px;">
+          <button class="btn accent" id="shareLinkBtn">Share link</button>
+          <button class="btn ghost" id="copyLinkBtn">Copy link</button>
         </div>
+        <p class="hint" style="margin-top:10px;">Send this to whoever's on your list so they know what a HootieHoo text is and where it came from. "Share link" opens your phone's normal share sheet (Messages, Mail, WhatsApp, etc. — whatever's installed); where that's not available, it falls back to a blank text message with the link already typed in, so you just pick who to send it to.</p>
       </div>
     </div>
-    <div class="card">
-      <h2>Message 3 — emergency (rare, needs a confirm tap)</h2>
-      <div class="form-grid">
-        <div class="field">
-          <label for="thirdLabelInput">Button title (short — this is all that shows on the circle)</label>
-          <input type="text" id="thirdLabelInput" />
+
+    <div class="screen" id="sscreen-data">
+      <button class="back-btn" data-target="sscreen-menu">&lsaquo; Back</button>
+      <div class="card">
+        <h2>Data</h2>
+        <p class="hint">Everything — members, messages, activity log — is stored only in this browser, on this device. Nothing is sent anywhere except the message itself, and only when you tap Send in the app that opens.</p>
+        <div class="btn-row" style="margin-top:10px;">
+          <button class="btn ghost" id="resetMessagesBtn">Reset messages to default</button>
+          <button class="btn danger" id="resetLogBtn">Clear activity log</button>
         </div>
-        <div class="field">
-          <label for="thirdBodyInput">Message text (the full text that actually gets sent)</label>
-          <textarea id="thirdBodyInput"></textarea>
-        </div>
+        <p class="hint" style="margin-top:8px;">Resetting messages only touches the two button titles/texts and the send channel above — your members list and activity log are left alone.</p>
       </div>
-    </div>
-    <div class="card">
-      <h2>Send via</h2>
-      <div class="field">
-        <select id="channelSelect">
-          <option value="sms">Text message (SMS group text)</option>
-          <option value="email">Email</option>
-        </select>
-      </div>
-      <p class="hint" style="margin-top:10px;">SMS opens a group text to everyone enabled. Email opens a draft bcc'd to everyone with an email address on file — useful for contacts without a phone number, or if group SMS isn't reliable between iPhone and Android in your group.</p>
-    </div>
-    <div class="card">
-      <h2>Notification sound</h2>
-      <p class="hint">Not something this app (or any website) can set — SMS and iMessage don't carry a "play this sound" instruction, so the sender has no control over it. Each recipient can give your number a distinct tone themselves: on iPhone, Contacts → your card → Edit → Text Tone. On Android it depends on the Messages app, usually under the contact's notification settings.</p>
-    </div>
-    <div class="card">
-      <h2>Share this app</h2>
-      <div class="field">
-        <label for="appLinkInput">Link to this app</label>
-        <input type="text" id="appLinkInput" readonly />
-      </div>
-      <div class="btn-row" style="margin-top:10px;">
-        <button class="btn accent" id="shareLinkBtn">Share link</button>
-        <button class="btn ghost" id="copyLinkBtn">Copy link</button>
-      </div>
-      <p class="hint" style="margin-top:10px;">Send this to whoever's on your list so they know what a HootieHoo text is and where it came from. "Share link" opens your phone's normal share sheet (Messages, Mail, WhatsApp, etc. — whatever's installed); where that's not available, it falls back to a blank text message with the link already typed in, so you just pick who to send it to.</p>
-    </div>
-    <div class="card">
-      <h2>Data</h2>
-      <p class="hint">Everything — members, messages, activity log — is stored only in this browser, on this device. Nothing is sent anywhere except the message itself, and only when you tap Send in the app that opens.</p>
-      <div class="btn-row" style="margin-top:10px;">
-        <button class="btn ghost" id="resetMessagesBtn">Reset messages to default</button>
-        <button class="btn danger" id="resetLogBtn">Clear activity log</button>
-      </div>
-      <p class="hint" style="margin-top:8px;">Resetting messages only touches the two button titles/texts and the send channel above — your members list and activity log are left alone.</p>
     </div>
   </section>
 </main>
@@ -708,6 +796,22 @@
       btn.classList.add("active");
       $("view-" + btn.dataset.view).classList.add("active");
     });
+  });
+
+  // ---------- Screen navigation (menu -> drill-down panels within a tab) ----------
+  function showScreen(viewId, screenId) {
+    var view = $(viewId);
+    if (!view) return;
+    view.querySelectorAll(".screen").forEach(function (el) { el.classList.remove("active"); });
+    var target = $(screenId);
+    if (target) target.classList.add("active");
+  }
+
+  document.addEventListener("click", function (e) {
+    var nav = e.target.closest("[data-target]");
+    if (!nav) return;
+    var view = nav.closest(".view");
+    if (view) showScreen(view.id, nav.dataset.target);
   });
 
   // ---------- Armed toggle ----------
@@ -960,17 +1064,63 @@
     return addedAny;
   }
 
+  var currentRosterGroupId = null;
+
   function renderMembers() {
+    renderMembersMenu();
     renderGroupList();
-    renderMemberGroupCards();
+    if ($("mscreen-roster").classList.contains("active")) renderRoster();
     groupCheckboxRow("newMemberGroups", checkedGroupIds("newMemberGroups"));
+  }
+
+  function membersOfGroup(gid) {
+    return state.members.filter(function (m) { return (m.groupIds || []).indexOf(gid) !== -1; });
+  }
+
+  function renderMembersMenu() {
+    $("menuGroupsSub").textContent = state.groups.length + " group" + (state.groups.length === 1 ? "" : "s");
+    var wrap = $("menuGroupRows");
+    wrap.innerHTML = "";
+    state.groups.forEach(function (g) {
+      var members = membersOfGroup(g.id);
+      var enabledCount = members.filter(function (m) { return m.enabled; }).length;
+      var btn = document.createElement("button");
+      btn.className = "menu-row";
+      btn.innerHTML =
+        '<span class="mr-text"><span class="mr-title"></span><span class="mr-sub"></span></span>' +
+        '<span class="mr-chevron">&rsaquo;</span>';
+      btn.querySelector(".mr-title").textContent = g.name;
+      btn.querySelector(".mr-sub").textContent =
+        enabledCount + " of " + members.length + " enabled" + (g.enabled ? "" : " — group off");
+      btn.addEventListener("click", function () {
+        currentRosterGroupId = g.id;
+        renderRoster();
+        showScreen("view-members", "mscreen-roster");
+      });
+      wrap.appendChild(btn);
+    });
+  }
+
+  function renderRoster() {
+    var g = state.groups.find(function (x) { return x.id === currentRosterGroupId; });
+    if (!g) {
+      showScreen("view-members", "mscreen-menu");
+      return;
+    }
+    var members = membersOfGroup(g.id);
+    var enabledCount = members.filter(function (m) { return m.enabled; }).length;
+    $("rosterHeading").innerHTML = escapeHtml(g.name) + ' <span class="count">' + enabledCount + " of " + members.length + " enabled</span>";
+    var list = $("rosterList");
+    list.innerHTML = "";
+    $("rosterEmpty").style.display = members.length === 0 ? "block" : "none";
+    members.forEach(function (m) { list.appendChild(buildMemberRow(m)); });
   }
 
   function renderGroupList() {
     var wrap = $("groupList");
     wrap.innerHTML = "";
     state.groups.forEach(function (g) {
-      var count = state.members.filter(function (m) { return (m.groupIds || []).indexOf(g.id) !== -1; }).length;
+      var count = membersOfGroup(g.id).length;
       var row = document.createElement("div");
       row.className = "member-row";
       row.innerHTML =
@@ -986,14 +1136,15 @@
       nameInput.addEventListener("input", function () {
         g.name = nameInput.value || "Group";
         save();
-        renderMemberGroupCards();
-        var current = checkedGroupIds("newMemberGroups");
-        groupCheckboxRow("newMemberGroups", current);
+        renderMembersMenu();
+        if (currentRosterGroupId === g.id) renderRoster();
+        groupCheckboxRow("newMemberGroups", checkedGroupIds("newMemberGroups"));
         renderSend();
       });
       row.querySelector(".switch").addEventListener("click", function () {
         g.enabled = !g.enabled;
         save();
+        renderMembersMenu();
         renderSend();
       });
       row.querySelector(".btn.danger").addEventListener("click", function () {
@@ -1010,7 +1161,7 @@
     }
     var g = state.groups.find(function (x) { return x.id === id; });
     if (!g) return;
-    var memberCount = state.members.filter(function (m) { return (m.groupIds || []).indexOf(id) !== -1; }).length;
+    var memberCount = membersOfGroup(id).length;
     var msg = memberCount > 0
       ? 'Delete "' + g.name + '"? Any of its ' + memberCount + ' member' + (memberCount === 1 ? "" : "s") + ' left with no other group will move to another group, not be deleted.'
       : 'Delete "' + g.name + '"?';
@@ -1027,29 +1178,6 @@
     toast("Group deleted");
   }
 
-  function renderMemberGroupCards() {
-    var container = $("memberGroupsContainer");
-    container.innerHTML = "";
-    state.groups.forEach(function (g) {
-      var groupMembers = state.members.filter(function (m) { return (m.groupIds || []).indexOf(g.id) !== -1; });
-      var enabledCount = groupMembers.filter(function (m) { return m.enabled; }).length;
-      var card = document.createElement("div");
-      card.className = "card";
-      card.innerHTML =
-        "<h2>" + escapeHtml(g.name) + ' <span class="count">' + enabledCount + " of " + groupMembers.length + ' enabled</span></h2>' +
-        '<div class="member-list"></div>' +
-        '<div class="empty" style="display:none;">No members in this group yet — add one below.</div>';
-      var list = card.querySelector(".member-list");
-      var empty = card.querySelector(".empty");
-      if (groupMembers.length === 0) {
-        empty.style.display = "block";
-      } else {
-        groupMembers.forEach(function (m) { list.appendChild(buildMemberRow(m)); });
-      }
-      container.appendChild(card);
-    });
-  }
-
   function buildMemberRow(m) {
     var row = document.createElement("div");
     row.className = "member-row";
@@ -1064,7 +1192,8 @@
     row.querySelector(".switch").addEventListener("click", function () {
       m.enabled = !m.enabled;
       save();
-      renderMemberGroupCards();
+      renderRoster();
+      renderMembersMenu();
       renderSend();
     });
     return row;
