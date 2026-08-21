@@ -271,11 +271,11 @@
 
     <div class="dash-circles">
       <button class="circle-btn red" id="btnFirst">
-        <span class="cb-label" id="firstLabel">HootieHoo Owls In The Sky</span>
+        <span class="cb-label" id="firstLabel">HootieHoo</span>
         <span class="cb-sub" id="firstBadge"></span>
       </button>
       <button class="circle-btn green" id="btnSecond">
-        <span class="cb-label" id="secondLabel">The Owls Are Sleeping</span>
+        <span class="cb-label" id="secondLabel">All Clear</span>
         <span class="cb-sub" id="secondBadge"></span>
       </button>
     </div>
@@ -344,11 +344,11 @@
       <h2>Message 1 — the "heads up" text</h2>
       <div class="form-grid">
         <div class="field">
-          <label for="firstLabelInput">Button label</label>
+          <label for="firstLabelInput">Button title (short — this is all that shows on the circle)</label>
           <input type="text" id="firstLabelInput" />
         </div>
         <div class="field">
-          <label for="firstBodyInput">Message text</label>
+          <label for="firstBodyInput">Message text (the full text that actually gets sent)</label>
           <textarea id="firstBodyInput"></textarea>
         </div>
       </div>
@@ -357,11 +357,11 @@
       <h2>Message 2 — the follow-up / all-clear</h2>
       <div class="form-grid">
         <div class="field">
-          <label for="secondLabelInput">Button label</label>
+          <label for="secondLabelInput">Button title (short — this is all that shows on the circle)</label>
           <input type="text" id="secondLabelInput" />
         </div>
         <div class="field">
-          <label for="secondBodyInput">Message text</label>
+          <label for="secondBodyInput">Message text (the full text that actually gets sent)</label>
           <textarea id="secondBodyInput"></textarea>
         </div>
       </div>
@@ -437,8 +437,8 @@
       armed: true,
       members: [],
       messages: {
-        first: { label: "HootieHoo Owls In The Sky", body: "HootieHoo Owls In The Sky" },
-        second: { label: "The Owls Are Sleeping", body: "The Owls Are Sleeping" }
+        first: { label: "HootieHoo", body: "HootieHoo Owls In The Sky" },
+        second: { label: "All Clear", body: "The Owls Are Sleeping" }
       },
       channel: "sms",
       nextWhich: "first",
