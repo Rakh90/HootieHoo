@@ -229,6 +229,7 @@
     width: 100%;
   }
   .field textarea { resize: vertical; min-height: 56px; }
+  .field input[readonly] { color: var(--ink-muted); }
   .form-grid { display: flex; flex-direction: column; gap: 10px; }
   .form-grid.two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 
@@ -426,6 +427,18 @@
     <div class="card">
       <h2>Notification sound</h2>
       <p class="hint">Not something this app (or any website) can set — SMS and iMessage don't carry a "play this sound" instruction, so the sender has no control over it. Each recipient can give your number a distinct tone themselves: on iPhone, Contacts → your card → Edit → Text Tone. On Android it depends on the Messages app, usually under the contact's notification settings.</p>
+    </div>
+    <div class="card">
+      <h2>Share this app</h2>
+      <div class="field">
+        <label for="appLinkInput">Link to this app</label>
+        <input type="text" id="appLinkInput" readonly />
+      </div>
+      <div class="btn-row" style="margin-top:10px;">
+        <button class="btn accent" id="shareLinkBtn">Share link</button>
+        <button class="btn ghost" id="copyLinkBtn">Copy link</button>
+      </div>
+      <p class="hint" style="margin-top:10px;">Send this to whoever's on your list so they know what a HootieHoo text is and where it came from. "Share link" opens your phone's normal share sheet (Messages, Mail, WhatsApp, etc. — whatever's installed); where that's not available, it falls back to a blank text message with the link already typed in, so you just pick who to send it to.</p>
     </div>
     <div class="card">
       <h2>Data</h2>
@@ -872,6 +885,54 @@
     $("thirdLabelInput").value = state.messages.third.label;
     $("thirdBodyInput").value = state.messages.third.body;
     $("channelSelect").value = state.channel;
+    $("appLinkInput").value = appLink();
+  }
+
+  // ---------- Share this app ----------
+  function appLink() {
+    return location.href.split("#")[0].split("?")[0];
+  }
+
+  $("copyLinkBtn").addEventListener("click", function () {
+    var link = appLink();
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(link).then(function () {
+        toast("Link copied");
+      }).catch(function () {
+        copyLinkFallback(link);
+      });
+    } else {
+      copyLinkFallback(link);
+    }
+  });
+
+  function copyLinkFallback(link) {
+    var input = $("appLinkInput");
+    input.focus();
+    input.select();
+    try {
+      document.execCommand("copy");
+      toast("Link copied");
+    } catch (e) {
+      toast("Couldn't copy — select the link above and copy it manually");
+    }
+  }
+
+  $("shareLinkBtn").addEventListener("click", function () {
+    var link = appLink();
+    var text = "HootieHoo check-in app — this is what those texts are:";
+    if (navigator.share) {
+      navigator.share({ title: "HootieHoo", text: text, url: link }).catch(function (e) {
+        if (e && e.name !== "AbortError") shareLinkFallback(link, text);
+      });
+    } else {
+      shareLinkFallback(link, text);
+    }
+  });
+
+  function shareLinkFallback(link, text) {
+    var body = encodeURIComponent(text + " " + link);
+    window.location.href = "sms:?&body=" + body;
   }
 
   function bindSettingsField(id, applyFn) {
