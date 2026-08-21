@@ -886,9 +886,7 @@
   function renderMembers() {
     renderGroupList();
     renderMemberGroupCards();
-    var current = checkedGroupIds("newMemberGroups");
-    if (current.length === 0 && state.groups.length > 0) current = [state.groups[0].id];
-    groupCheckboxRow("newMemberGroups", current);
+    groupCheckboxRow("newMemberGroups", checkedGroupIds("newMemberGroups"));
   }
 
   function renderGroupList() {
@@ -1058,7 +1056,7 @@
     pendingContacts = parsed;
     var names = parsed.map(function (c) { return c.name || c.phone || c.email; }).join(", ");
     $("contactGroupSummary").textContent = "Adding " + parsed.length + " contact" + (parsed.length === 1 ? "" : "s") + ": " + names;
-    groupCheckboxRow("contactGroupChecks", state.groups.length ? [state.groups[0].id] : []);
+    groupCheckboxRow("contactGroupChecks", []);
     $("contactGroupBackdrop").classList.add("show");
   }
 
