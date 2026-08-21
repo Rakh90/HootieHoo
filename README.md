@@ -6,10 +6,19 @@ Tap the "HootieHoo" button before you head out; tap "Resume Life" when you're ba
 
 ## What it does
 
-- **Send** — two big buttons, one per message. Whichever you're expected to send next is highlighted "Next," but either is always tappable — useful if you need to re-send or skip straight to the all-clear. A running local activity log shows what was opened and when (it can't confirm the message actually went out — see below).
+- **Send (the dashboard)** — a dark, illuminated-button control panel: a red circular HootieHoo button and a green circular Resume Life (all-clear) button. Whichever you're expected to send next pulses "Next," but either is always tappable — useful if you need to re-send or skip straight to the all-clear. A running local activity log shows what was opened and when (it can't confirm the message actually went out — see below).
+- **System armed / standby toggle** — a master switch at the top of the dashboard. Flip it to Standby to dim both buttons and block taps entirely, without touching your members, messages, or schedule — a quick "off" for whenever you don't want this thing live.
 - **Members** — add people with a phone number and/or email, and flip any one of them off without deleting them — handy for "not this trip" without losing their info.
-- **Schedule** — optionally restrict the buttons to certain days and a time window (e.g. only during daylight hours). Outside that window the Send tab shows a lock, but a "send anyway" override is always one tap away — a schedule is a nudge, not a lockout.
+- **Schedule** — optionally restrict the buttons to certain days and a time window (e.g. only during daylight hours). Outside that window the buttons turn amber with a lock icon, but a "send anyway" override is always one tap away — a schedule is a nudge, not a lockout. Important: this only gates *your* phone — see below for what it can't do.
 - **Settings** — edit both message texts and button labels, and choose whether messages go out as a group text (SMS) or email (bcc). Email is a useful fallback for a contact without a phone number, or when group SMS gets flaky across a mix of iPhone and Android.
+
+## What the Schedule can't do
+
+The Schedule tab only controls whether **you** can tap Send from this app — it decides nothing on your recipients' end. HootieHoo doesn't hold messages, queue them, or deliver them later; the moment you tap Send (in or out of your scheduled hours), the native Messages/Mail app sends it immediately, and it lands on every recipient's phone right away, same as any other text. There's no mechanism for a website to mute or schedule someone else's phone. If you don't want your group getting texts overnight, that has to be set on *their* phone (Do Not Disturb / Focus, with your contact allowed through or not) — HootieHoo has no way to do that for them.
+
+## Installing it as a home-screen dashboard
+
+HootieHoo ships with a `manifest.json` and app icon, so "Add to Home Screen" launches it full-screen with no browser address bar — it looks and feels like an installed app, not a bookmark. One real limit worth knowing: like any website or installed web-app, it only runs while you actually have it open. There's no way for a page like this to keep running, listen for anything, or act in the true background while your phone is locked or you're in another app — that would require a native app with OS-level background permissions, a different and much bigger project than a static page. What you get here is an app-like *launch experience*, not background execution.
 
 ## Why it's not fully automatic
 

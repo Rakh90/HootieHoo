@@ -3,71 +3,67 @@
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
 <meta name="apple-mobile-web-app-title" content="HootieHoo" />
-<meta name="theme-color" content="#eef2f6" media="(prefers-color-scheme: light)" />
-<meta name="theme-color" content="#10161f" media="(prefers-color-scheme: dark)" />
+<meta name="theme-color" content="#05070b" />
+<link rel="manifest" href="manifest.json" />
+<link rel="apple-touch-icon" href="icons/icon-192.png" />
+<link rel="icon" href="icons/icon-512.png" />
 <title>HootieHoo — quick check-in messages</title>
 <style>
   :root {
-    --paper: #eef2f6;
-    --paper-flat: #e5eaf0;
-    --surface: #f9fbfd;
-    --ink: #17212e;
-    --ink-muted: #57667a;
-    --ink-faint: #8b97a8;
-    --border: #d5dde6;
-    --border-soft: #e2e8ef;
-    --accent: #2467c4;
-    --accent-ink: #ffffff;
-    --accent-soft: #d9e6f8;
-    --accent-soft-ink: #1a4a8f;
-    --success: #2f8f5b;
-    --success-soft: #dcf0e4;
-    --caution: #c4552a;
-    --caution-soft: #f6ddd0;
-    --danger: #c0392f;
-    --danger-soft: #f6dad6;
-    --neutral-pill: #5f6b7a;
-    --neutral-pill-soft: #e6eaf0;
-    --shadow: rgba(23, 33, 46, 0.09);
-    --shadow-lg: rgba(23, 33, 46, 0.18);
+    --bg: #05070b;
+    --panel: #0f1521;
+    --panel-alt: #141b28;
+    --ink: #e7ecf3;
+    --ink-muted: #8f9bb0;
+    --ink-faint: #57627a;
+    --border: #212b3a;
+    --border-soft: #1a2230;
+    --accent: #6ba1e8;
+    --accent-ink: #06101d;
+    --accent-soft: #1c2c42;
+    --accent-soft-ink: #bcd6f8;
+    --success: #35c483;
+    --success-soft: #123322;
+    --danger: #e0685a;
+    --danger-soft: #2c1614;
+    --amber: #e3a63f;
+    --amber-soft: #2c210f;
+    --neutral-pill: #8b96aa;
+    --neutral-pill-soft: #17202d;
+    --shadow: rgba(0, 0, 0, 0.5);
+    --shadow-lg: rgba(0, 0, 0, 0.65);
+
+    --red-hi: #ff8a73;
+    --red-mid: #e0392b;
+    --red-dim: #4a1f19;
+    --red-glow: rgba(224, 57, 43, 0.55);
+
+    --green-hi: #8ff0c0;
+    --green-mid: #2f9f63;
+    --green-dim: #123322;
+    --green-glow: rgba(47, 159, 99, 0.5);
+
+    --amber-hi: #f5d491;
+    --amber-mid: #c98f2c;
+    --amber-dim: #332510;
+    --amber-glow: rgba(201, 143, 44, 0.4);
+
+    --unlit-hi: #4a5262;
+    --unlit-mid: #2c3340;
+    --unlit-dim: #14181f;
+    --unlit-glow: rgba(0, 0, 0, 0);
+
     --font-display: ui-serif, Charter, "Iowan Old Style", Georgia, "Times New Roman", serif;
     --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
     --font-mono: ui-monospace, "SF Mono", "Cascadia Mono", Menlo, Consolas, monospace;
-    color-scheme: light;
-  }
-  @media (prefers-color-scheme: dark) {
-    :root {
-      --paper: #10161f;
-      --paper-flat: #0c1119;
-      --surface: #1a2330;
-      --ink: #e7ecf3;
-      --ink-muted: #97a3b5;
-      --ink-faint: #64728a;
-      --border: #2b3646;
-      --border-soft: #232d3b;
-      --accent: #6ba1e8;
-      --accent-ink: #0a1420;
-      --accent-soft: #1e3350;
-      --accent-soft-ink: #bcd6f8;
-      --success: #5cb488;
-      --success-soft: #17301f;
-      --caution: #d98456;
-      --caution-soft: #3a2416;
-      --danger: #e0685a;
-      --danger-soft: #3a1c17;
-      --neutral-pill: #9aa6b8;
-      --neutral-pill-soft: #212b38;
-      --shadow: rgba(0, 0, 0, 0.4);
-      --shadow-lg: rgba(0, 0, 0, 0.55);
-      color-scheme: dark;
-    }
+    color-scheme: dark;
   }
 
   * { box-sizing: border-box; }
   html, body {
     margin: 0;
     padding: 0;
-    background: var(--paper);
+    background: var(--bg);
     color: var(--ink);
     font-family: var(--font-body);
     -webkit-tap-highlight-color: transparent;
@@ -83,10 +79,10 @@
 
   header.top {
     padding: calc(18px + env(safe-area-inset-top)) 20px 14px;
-    background: var(--paper-flat);
+    background: var(--panel);
     border-bottom: 1px solid var(--border-soft);
   }
-  header.top h1 { font-size: 20px; }
+  header.top h1 { font-size: 20px; letter-spacing: 0.02em; }
   header.top .sub { color: var(--ink-muted); font-size: 13px; margin-top: 2px; }
 
   main { padding: 16px; max-width: 640px; margin: 0 auto; }
@@ -94,61 +90,101 @@
   .view.active { display: flex; }
 
   .card {
-    background: var(--surface);
+    background: var(--panel);
     border: 1px solid var(--border-soft);
     border-radius: 16px;
     padding: 16px;
     box-shadow: 0 1px 2px var(--shadow);
   }
-  .card + .card { margin-top: 0; }
   .card h2 { font-size: 15px; margin-bottom: 10px; }
   .card h2 .count { color: var(--ink-faint); font-weight: 400; font-family: var(--font-body); font-size: 13px; }
 
+  /* ---------- Dashboard ---------- */
+  .dash-armbar {
+    display: flex; align-items: center; justify-content: space-between;
+    background: var(--panel); border: 1px solid var(--border-soft); border-radius: 14px;
+    padding: 12px 16px;
+  }
+  .dash-armbar .label {
+    font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  .dash-armbar .state { font-family: var(--font-mono); font-size: 15px; margin-top: 2px; letter-spacing: 0.04em; }
+  .dash-armbar .state.on { color: var(--success); }
+  .dash-armbar .state.off { color: var(--ink-faint); }
+
+  .dash-circles {
+    display: flex; gap: 20px; justify-content: center; align-items: flex-start;
+    padding: 14px 0 4px;
+  }
+  .circle-btn {
+    --hi: var(--red-hi); --mid: var(--red-mid); --dim: var(--red-dim); --glow: var(--red-glow);
+    width: min(38vw, 172px); height: min(38vw, 172px);
+    border-radius: 50%;
+    border: none;
+    position: relative;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 4px;
+    cursor: pointer;
+    background: radial-gradient(circle at 35% 28%, var(--hi), var(--mid) 45%, var(--dim) 100%);
+    box-shadow:
+      0 0 0 6px rgba(255,255,255,0.04),
+      0 0 34px 4px var(--glow),
+      inset 0 -10px 18px rgba(0,0,0,0.35),
+      inset 0 6px 10px rgba(255,255,255,0.18);
+    transition: transform 0.08s ease, filter 0.25s ease;
+  }
+  .circle-btn:active { transform: scale(0.96); }
+  .circle-btn.green { --hi: var(--green-hi); --mid: var(--green-mid); --dim: var(--green-dim); --glow: var(--green-glow); }
+  .circle-btn.locked { --hi: var(--amber-hi); --mid: var(--amber-mid); --dim: var(--amber-dim); --glow: var(--amber-glow); }
+  .circle-btn.unlit {
+    --hi: var(--unlit-hi); --mid: var(--unlit-mid); --dim: var(--unlit-dim); --glow: var(--unlit-glow);
+    cursor: not-allowed;
+  }
+  .circle-btn .cb-label {
+    font-size: clamp(14px, 4.2vw, 19px); font-weight: 700; letter-spacing: 0.01em;
+    color: rgba(8,6,4,0.78); text-shadow: 0 1px 0 rgba(255,255,255,0.25);
+    max-width: 82%; text-align: center; line-height: 1.15;
+  }
+  .circle-btn.unlit .cb-label { color: rgba(255,255,255,0.55); text-shadow: none; }
+  .circle-btn .cb-sub {
+    font-family: var(--font-mono);
+    font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.1em;
+    color: rgba(8,6,4,0.6);
+  }
+  .circle-btn.unlit .cb-sub { color: rgba(255,255,255,0.4); }
+  .circle-btn.next { animation: pulseGlow 1.8s ease-in-out infinite; }
+  @keyframes pulseGlow {
+    0%, 100% {
+      box-shadow: 0 0 0 6px rgba(255,255,255,0.04), 0 0 30px 3px var(--glow), inset 0 -10px 18px rgba(0,0,0,0.35), inset 0 6px 10px rgba(255,255,255,0.18);
+    }
+    50% {
+      box-shadow: 0 0 0 9px rgba(255,255,255,0.08), 0 0 54px 12px var(--glow), inset 0 -10px 18px rgba(0,0,0,0.35), inset 0 6px 10px rgba(255,255,255,0.22);
+    }
+  }
+
+  .preview-row { display: flex; gap: 10px; align-items: flex-start; padding: 6px 0; }
+  .preview-row + .preview-row { border-top: 1px solid var(--border-soft); }
+  .preview-tag { font-size: 10px; margin-top: 5px; flex: none; }
+  .preview-tag.red { color: var(--red-mid); }
+  .preview-tag.green { color: var(--green-mid); }
+  .preview-text { font-size: 13.5px; color: var(--ink-muted); line-height: 1.4; }
+
   .status-row {
     display: flex; align-items: center; gap: 8px;
-    font-size: 13px; color: var(--ink-muted);
-    padding: 10px 12px; border-radius: 10px; background: var(--paper-flat);
-    margin-bottom: 14px;
+    font-family: var(--font-mono);
+    font-size: 12.5px; letter-spacing: 0.02em; color: var(--ink-muted);
+    padding: 10px 12px; border-radius: 10px; background: var(--panel-alt);
   }
   .status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--success); flex: none; }
-  .status-row.blocked .status-dot { background: var(--danger); }
-  .status-row.blocked { color: var(--danger); background: var(--danger-soft); }
-
-  .send-btn {
-    width: 100%;
-    display: flex; flex-direction: column; align-items: flex-start; gap: 4px;
-    padding: 18px 18px;
-    border-radius: 16px;
-    border: 1px solid var(--border-soft);
-    background: var(--surface);
-    cursor: pointer;
-    text-align: left;
-    transition: transform 0.06s ease;
-  }
-  .send-btn:active { transform: scale(0.985); }
-  .send-btn.primary {
-    background: var(--accent);
-    border-color: var(--accent);
-    color: var(--accent-ink);
-  }
-  .send-btn .label { font-family: var(--font-display); font-size: 19px; font-weight: 600; }
-  .send-btn .preview { font-size: 13px; opacity: 0.85; }
-  .send-btn .badge {
-    align-self: flex-start;
-    font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em;
-    background: rgba(255,255,255,0.22);
-    padding: 2px 8px; border-radius: 999px; margin-bottom: 2px;
-  }
-  .send-btn.primary .badge { background: rgba(255,255,255,0.22); color: var(--accent-ink); }
-  .send-btn:not(.primary) .badge { background: var(--accent-soft); color: var(--accent-soft-ink); }
-  .send-btn[disabled] { opacity: 0.5; cursor: not-allowed; }
+  .status-row.blocked .status-dot { background: var(--amber); }
+  .status-row.blocked { color: var(--amber); background: var(--amber-soft); }
 
   .btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
   .btn {
     padding: 9px 14px; border-radius: 10px; border: 1px solid var(--border);
-    background: var(--surface); color: var(--ink); font-size: 13.5px; cursor: pointer;
+    background: var(--panel-alt); color: var(--ink); font-size: 13.5px; cursor: pointer;
   }
-  .btn.small { padding: 6px 10px; font-size: 12.5px; }
   .btn.ghost { background: transparent; }
   .btn.danger { color: var(--danger); border-color: var(--danger-soft); }
   .btn.accent { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
@@ -184,7 +220,7 @@
   .field input[type="text"], .field input[type="tel"], .field input[type="email"],
   .field input[type="time"], .field textarea, .field select {
     font-family: inherit; font-size: 14.5px; padding: 9px 11px;
-    border-radius: 10px; border: 1px solid var(--border); background: var(--paper-flat); color: var(--ink);
+    border-radius: 10px; border: 1px solid var(--border); background: var(--panel-alt); color: var(--ink);
     width: 100%;
   }
   .field textarea { resize: vertical; min-height: 56px; }
@@ -194,7 +230,7 @@
   .day-picker { display: flex; gap: 6px; flex-wrap: wrap; }
   .day-btn {
     width: 38px; height: 38px; border-radius: 10px; border: 1px solid var(--border);
-    background: var(--paper-flat); color: var(--ink-muted); font-size: 12.5px; cursor: pointer;
+    background: var(--panel-alt); color: var(--ink-muted); font-size: 12.5px; cursor: pointer;
   }
   .day-btn.on { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
 
@@ -204,7 +240,7 @@
 
   nav.tabs {
     position: fixed; bottom: 0; left: 0; right: 0;
-    display: flex; background: var(--paper-flat); border-top: 1px solid var(--border-soft);
+    display: flex; background: var(--panel); border-top: 1px solid var(--border-soft);
     padding-bottom: env(safe-area-inset-bottom);
     z-index: 10;
   }
@@ -219,7 +255,7 @@
   .toast {
     position: fixed; left: 50%; bottom: calc(76px + env(safe-area-inset-bottom));
     transform: translateX(-50%) translateY(8px);
-    background: var(--ink); color: var(--paper);
+    background: var(--ink); color: var(--bg);
     padding: 10px 16px; border-radius: 999px; font-size: 13px;
     opacity: 0; pointer-events: none; transition: opacity 0.2s ease, transform 0.2s ease;
     box-shadow: 0 4px 14px var(--shadow-lg); z-index: 20; white-space: nowrap;
@@ -227,15 +263,16 @@
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
   .modal-backdrop {
-    position: fixed; inset: 0; background: rgba(0,0,0,0.4);
+    position: fixed; inset: 0; background: rgba(0,0,0,0.55);
     display: none; align-items: flex-end; justify-content: center; z-index: 30;
   }
   .modal-backdrop.show { display: flex; }
   .modal {
-    background: var(--surface); width: 100%; max-width: 480px;
+    background: var(--panel); width: 100%; max-width: 480px;
     border-radius: 18px 18px 0 0; padding: 18px 18px calc(18px + env(safe-area-inset-bottom));
     display: flex; flex-direction: column; gap: 12px;
     max-height: 85vh; overflow-y: auto;
+    border: 1px solid var(--border-soft); border-bottom: none;
   }
   .modal h3 { font-size: 16px; }
 </style>
@@ -246,29 +283,48 @@
 </header>
 
 <main>
-  <!-- SEND -->
+  <!-- SEND (dashboard) -->
   <section class="view active" id="view-send">
+    <div class="dash-armbar">
+      <div>
+        <div class="label">System</div>
+        <div class="state on" id="armStateText">Armed</div>
+      </div>
+      <button class="switch on" id="armToggle"><span class="knob"></span></button>
+    </div>
+
+    <div class="dash-circles">
+      <button class="circle-btn red" id="btnFirst">
+        <span class="cb-label" id="firstLabel">HootieHoo</span>
+        <span class="cb-sub" id="firstBadge">Next</span>
+      </button>
+      <button class="circle-btn green" id="btnSecond">
+        <span class="cb-label" id="secondLabel">Resume Life</span>
+        <span class="cb-sub" id="secondBadge">Send</span>
+      </button>
+    </div>
+
     <div id="scheduleStatus" class="status-row">
       <span class="status-dot"></span>
       <span id="scheduleStatusText">Always active — no schedule set</span>
     </div>
 
-    <button class="send-btn primary" id="btnFirst">
-      <span class="badge" id="firstBadge">Send</span>
-      <span class="label" id="firstLabel">HootieHoo</span>
-      <span class="preview" id="firstPreview">HootieHoo — heading out now.</span>
-    </button>
-
-    <button class="send-btn" id="btnSecond">
-      <span class="badge" id="secondBadge">Follow-up</span>
-      <span class="label" id="secondLabel">Resume Life</span>
-      <span class="preview" id="secondPreview">Resume Life — I'm back, all clear.</span>
-    </button>
+    <div class="card">
+      <h2>Message preview</h2>
+      <div class="preview-row">
+        <span class="preview-tag red">&#9679;</span>
+        <span class="preview-text" id="firstPreview">HootieHoo — heading out now.</span>
+      </div>
+      <div class="preview-row">
+        <span class="preview-tag green">&#9679;</span>
+        <span class="preview-text" id="secondPreview">Resume Life — I'm back, all clear.</span>
+      </div>
+    </div>
 
     <div class="card">
       <h2>Recipients <span class="count" id="recipientCount">0 of 0 enabled</span></h2>
       <div class="chip-row" id="recipientChips"></div>
-      <div class="hint" style="margin-top:10px;">Tapping a message opens your phone's Messages app with everyone enabled below already filled in — you still give the final tap to send, since no phone lets a website send texts silently.</div>
+      <div class="hint" style="margin-top:10px;">Tapping a button opens your phone's Messages app with everyone enabled below already filled in — you still give the final tap to send, since no phone lets a website send texts silently.</div>
     </div>
 
     <div class="card">
@@ -311,7 +367,7 @@
       <div class="member-row" style="border:none; padding-top:0;">
         <div class="info">
           <div class="name">Restrict to a schedule</div>
-          <div class="phone">Off = the button always works</div>
+          <div class="phone">Off = the buttons always work, any time</div>
         </div>
         <button class="switch" id="scheduleToggle"><span class="knob"></span></button>
       </div>
@@ -331,8 +387,10 @@
             <input type="time" id="endTime" />
           </div>
         </div>
-        <p class="hint" style="margin-top:10px;">Outside these hours the Send tab shows a lock, but there's always an "send anyway" option — a schedule shouldn't get in the way of a real check-in.</p>
+        <p class="hint" style="margin-top:10px;">Outside these hours the buttons show a lock icon, but there's always a "tap again to send anyway" override — a schedule shouldn't get in the way of a real check-in.</p>
       </div>
+      <div class="divider"></div>
+      <p class="hint">This only controls when <strong>you</strong> can send from this phone. It has no effect on the recipients' phones at all — once a text is sent, it lands the instant it's sent, on their end, the same as any other text message. There's no way for a website to schedule quiet hours on someone else's phone; if you want your group not to be notified overnight, that's a setting on <em>their</em> phone (Do Not Disturb / Focus for your contact), not something this app can set for them.</p>
     </div>
   </section>
 
@@ -373,6 +431,10 @@
         </select>
       </div>
       <p class="hint" style="margin-top:10px;">SMS opens a group text to everyone enabled. Email opens a draft bcc'd to everyone with an email address on file — useful for contacts without a phone number, or if group SMS isn't reliable between iPhone and Android in your group.</p>
+    </div>
+    <div class="card">
+      <h2>Notification sound</h2>
+      <p class="hint">Not something this app (or any website) can set — SMS and iMessage don't carry a "play this sound" instruction, so the sender has no control over it. Each recipient can give your number a distinct tone themselves: on iPhone, Contacts → your card → Edit → Text Tone. On Android it depends on the Messages app, usually under the contact's notification settings.</p>
     </div>
     <div class="card">
       <h2>Data</h2>
@@ -430,6 +492,7 @@
 
   function defaultState() {
     return {
+      armed: true,
       members: [],
       messages: {
         first: { label: "HootieHoo", body: "HootieHoo — heading out now." },
@@ -450,6 +513,7 @@
       var parsed = JSON.parse(raw);
       var d = defaultState();
       return {
+        armed: typeof parsed.armed === "boolean" ? parsed.armed : d.armed,
         members: Array.isArray(parsed.members) ? parsed.members : d.members,
         messages: Object.assign({}, d.messages, parsed.messages, {
           first: Object.assign({}, d.messages.first, parsed.messages && parsed.messages.first),
@@ -469,6 +533,7 @@
 
   function save() {
     var toSave = {
+      armed: state.armed,
       members: state.members,
       messages: state.messages,
       schedule: state.schedule,
@@ -497,6 +562,13 @@
       btn.classList.add("active");
       $("view-" + btn.dataset.view).classList.add("active");
     });
+  });
+
+  // ---------- Armed toggle ----------
+  $("armToggle").addEventListener("click", function () {
+    state.armed = !state.armed;
+    save();
+    renderSend();
   });
 
   // ---------- Schedule logic ----------
@@ -560,12 +632,19 @@
     return members.filter(function (m) { return m.phone; }).length;
   }
 
+  var pendingOverride = null;
+
   function doSend(which, opts) {
     opts = opts || {};
+    if (!state.armed) {
+      toast("System disarmed — flip Armed on at the top to send");
+      return;
+    }
     if (!opts.override && !isWithinSchedule()) {
       toast("Outside active hours — tap again to send anyway");
       renderScheduleStatus();
       pendingOverride = which;
+      renderSend();
       return;
     }
     pendingOverride = null;
@@ -583,8 +662,6 @@
     renderSend();
   }
 
-  var pendingOverride = null;
-
   $("btnFirst").addEventListener("click", function () {
     doSend("first", { override: pendingOverride === "first" });
   });
@@ -601,21 +678,34 @@
     return new Date(ts).toLocaleDateString();
   }
 
+  function circleState(which) {
+    var ready = recipientReadyCount();
+    if (!state.armed) return { cls: "unlit", badge: "Off" };
+    if (ready === 0) return { cls: "unlit", badge: "No recip." };
+    if (!isWithinSchedule() && pendingOverride !== which) return { cls: "locked", badge: "Locked — tap" };
+    if (state.nextWhich === which) return { cls: "next", badge: "Next" };
+    return { cls: "", badge: "Send" };
+  }
+
   function renderSend() {
-    var within = renderScheduleStatus();
+    renderScheduleStatus();
+
+    $("armStateText").textContent = state.armed ? "Armed" : "Standby";
+    $("armStateText").classList.toggle("on", state.armed);
+    $("armStateText").classList.toggle("off", !state.armed);
+    $("armToggle").classList.toggle("on", state.armed);
 
     $("firstLabel").textContent = state.messages.first.label;
     $("firstPreview").textContent = state.messages.first.body;
     $("secondLabel").textContent = state.messages.second.label;
     $("secondPreview").textContent = state.messages.second.body;
 
-    $("firstBadge").textContent = state.nextWhich === "first" ? "Next" : "Send";
-    $("secondBadge").textContent = state.nextWhich === "second" ? "Next" : "Follow-up";
-    $("btnFirst").classList.toggle("primary", state.nextWhich === "first");
-    $("btnSecond").classList.toggle("primary", state.nextWhich === "second");
-
-    $("btnFirst").disabled = false;
-    $("btnSecond").disabled = false;
+    var firstState = circleState("first");
+    var secondState = circleState("second");
+    $("btnFirst").className = "circle-btn red" + (firstState.cls ? " " + firstState.cls : "");
+    $("btnSecond").className = "circle-btn green" + (secondState.cls ? " " + secondState.cls : "");
+    $("firstBadge").textContent = firstState.badge;
+    $("secondBadge").textContent = secondState.badge;
 
     var members = state.members;
     var enabled = enabledMembers();
@@ -822,7 +912,7 @@
   renderSettings();
 
   setInterval(function () {
-    renderScheduleStatus();
+    renderSend();
   }, 30000);
 })();
 </script>
