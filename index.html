@@ -384,8 +384,10 @@
       <h2>Data</h2>
       <p class="hint">Everything — members, messages, activity log — is stored only in this browser, on this device. Nothing is sent anywhere except the message itself, and only when you tap Send in the app that opens.</p>
       <div class="btn-row" style="margin-top:10px;">
+        <button class="btn ghost" id="resetMessagesBtn">Reset messages to default</button>
         <button class="btn danger" id="resetLogBtn">Clear activity log</button>
       </div>
+      <p class="hint" style="margin-top:8px;">Resetting messages only touches the two button titles/texts and the send channel above — your members list and activity log are left alone.</p>
     </div>
   </section>
 </main>
@@ -796,6 +798,17 @@
     save();
     renderSend();
     toast("Activity log cleared");
+  });
+
+  $("resetMessagesBtn").addEventListener("click", function () {
+    if (!confirm("Reset both button titles/messages and the send channel back to HootieHoo's defaults? Your members and activity log won't be touched.")) return;
+    var d = defaultState();
+    state.messages = d.messages;
+    state.channel = d.channel;
+    save();
+    renderSettings();
+    renderSend();
+    toast("Messages reset to default");
   });
 
   // ---------- Init ----------

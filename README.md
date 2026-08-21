@@ -26,6 +26,14 @@ Where it's unsupported, the "Add from Contacts" button simply doesn't appear —
 
 HootieHoo ships with a `manifest.json` and app icon, so "Add to Home Screen" launches it full-screen with no browser address bar — it looks and feels like an installed app, not a bookmark. One real limit worth knowing: like any website or installed web-app, it only runs while you actually have it open. There's no way for a page like this to keep running, listen for anything, or act in the true background while your phone is locked or you're in another app — that would require a native app with OS-level background permissions, a different and much bigger project than a static page. What you get here is an app-like *launch experience*, not background execution.
 
+## How updates reach an already-installed icon
+
+HootieHoo has **no service worker** — that's deliberate. Without one, the home-screen icon isn't a cached offline app shell; tapping it just loads `index.html` fresh from GitHub Pages like any normal webpage. So when this code changes (a new feature, a bug fix, a default tweak), there's nothing to reinstall — the next time you open the app, you're already running the new version.
+
+Two things that update this way *don't* carry over: your own saved data (members, message text, armed state, activity log), which intentionally always wins over the code's defaults so an update can never silently overwrite something you've customized — and your recipients, who never install anything at all; they only ever receive a normal text message, so this whole question doesn't apply to them.
+
+One caveat: right after a push, it can take a minute or two for GitHub Pages to finish redeploying, and your browser may briefly hold a cached copy of the old page. If you open the app right after an update and don't see the change, force-closing and reopening it (or a pull-to-refresh) clears that up.
+
 ## Why it's not fully automatic
 
 No phone or browser lets a website send a text message silently — that's an OS-level anti-spam/consent protection on both iOS and Android, not a limitation of this app, and there's no way around it from a page like this. What HootieHoo does instead is pre-fill everything (recipients, message body) and hand you straight to the native Messages/Mail app so all that's left is your own final tap to send.
@@ -37,6 +45,8 @@ Truly zero-tap, fire-and-forget sending is possible, but only via a paid SMS API
 Everything — members, messages, activity log — is stored **only in your browser's local storage** on the device you open it on. There's no account and no sync between devices. Nothing is sent anywhere except the message itself, and only once you tap Send in the app HootieHoo hands you off to.
 
 Clearing your browser's site data for this page erases everything. There's no backup/export yet — worth adding if you end up relying on this.
+
+Since your saved messages/members always take priority over the code's built-in defaults (so an update never silently overwrites wording you've customized — see below), Settings has a **Reset messages to default** button for when you actually do want to go back to HootieHoo's stock titles/text/send-channel. It leaves your members list and activity log alone.
 
 ## Running it
 
