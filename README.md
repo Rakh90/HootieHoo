@@ -6,12 +6,21 @@ Tap the red "HootieHoo Owls In The Sky" button before you head out; tap the gree
 
 ## What it does
 
-- **Send (the dashboard)** — a dark, illuminated-button control panel: a red circular button and a green circular all-clear button, with fully editable labels and text (Settings). Whichever you're expected to send next pulses "Next," but either is always tappable — useful if you need to re-send or skip straight to the all-clear. A running local activity log shows what was opened and when (it can't confirm the message actually went out — see below).
+- **Send (the dashboard)** — a dark, illuminated-button control panel: a red circular button and a green circular all-clear button, with fully editable labels and text (Settings). Whichever you're expected to send next pulses gently, but either is always tappable — useful if you need to re-send or skip straight to the all-clear. A running local activity log shows what was opened and when (it can't confirm the message actually went out — see below).
 - **System armed / standby toggle** — a master switch at the top of the dashboard. Flip it to Standby to dim both buttons and block taps entirely, without touching your members or messages — a quick "off" for whenever you don't want this thing live.
-- **Members** — add people with a phone number and/or email, and flip any one of them off without deleting them — handy for "not this trip" without losing their info.
+- **Members** — add people with a phone number and/or email, and flip any one of them off without deleting them — handy for "not this trip" without losing their info. On browsers that support it (currently Chrome on Android), an **Add from Contacts** button lets you pick people straight from your phone's contact list instead of typing them in — see below for where this does and doesn't work.
 - **Settings** — edit both message texts and button labels, and choose whether messages go out as a group text (SMS) or email (bcc). Email is a useful fallback for a contact without a phone number, or when group SMS gets flaky across a mix of iPhone and Android.
 
 There's intentionally no schedule/quiet-hours feature: it could only ever gate *your* phone, not your recipients'. HootieHoo doesn't hold or queue messages — the moment you tap Send, the native Messages/Mail app sends it immediately, and it lands on every recipient's phone right away, same as any other text. There's no mechanism for a website to mute or delay delivery on someone else's phone, so a "schedule" here would only have been misleading.
+
+## Adding contacts directly from your phone
+
+The Members tab uses the browser's [Contact Picker API](https://developer.mozilla.org/en-US/docs/Web/API/Contact_Picker_API) when it's available, so you can select people straight from your phone's address book instead of typing each name/number/email by hand. As of now, browser support is narrow and worth knowing before you rely on it:
+
+- **Works today:** Chrome (and Chromium-based browsers like Edge, Samsung Internet) on **Android**.
+- **Doesn't work:** Safari on iPhone/iPad, desktop browsers generally. Apple hasn't shipped this API in Safari — some iOS versions have it behind an experimental flag buried in Settings → Safari → Advanced → Feature Flags, but that's not something to rely on or ask your group to go dig up.
+
+Where it's unsupported, the "Add from Contacts" button simply doesn't appear — you get an explanatory note and the regular manual-entry form instead, which always works everywhere. This is a browser platform limitation, not something specific to HootieHoo's code; it'll quietly start working on more devices as/if Apple adds support in the future, with no changes needed here.
 
 ## Installing it as a home-screen dashboard
 

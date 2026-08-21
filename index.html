@@ -145,6 +145,7 @@
     color: rgba(8,6,4,0.6);
   }
   .circle-btn.unlit .cb-sub { color: rgba(255,255,255,0.4); }
+  .circle-btn .cb-sub:empty { display: none; }
   .circle-btn.next { animation: pulseGlow 1.8s ease-in-out infinite; }
   @keyframes pulseGlow {
     0%, 100% {
@@ -271,11 +272,11 @@
     <div class="dash-circles">
       <button class="circle-btn red" id="btnFirst">
         <span class="cb-label" id="firstLabel">HootieHoo Owls In The Sky</span>
-        <span class="cb-sub" id="firstBadge">Next</span>
+        <span class="cb-sub" id="firstBadge"></span>
       </button>
       <button class="circle-btn green" id="btnSecond">
         <span class="cb-label" id="secondLabel">The Owls Are Sleeping</span>
-        <span class="cb-sub" id="secondBadge">Send</span>
+        <span class="cb-sub" id="secondBadge"></span>
       </button>
     </div>
 
@@ -310,6 +311,13 @@
       <div id="memberList"></div>
       <div class="empty" id="memberEmpty" style="display:none;">No one added yet. Add your first check-in contact below.</div>
       <div class="divider"></div>
+
+      <div id="contactPickerRow" style="display:none; margin-bottom:14px;">
+        <button class="btn accent" id="pickContactsBtn">Add from Contacts</button>
+        <p class="hint" style="margin-top:8px;">Pick one or more people from your phone's contacts — name, number, and email (if saved) fill in automatically.</p>
+      </div>
+      <p class="hint" id="contactPickerUnsupported" style="display:none; margin-bottom:14px;">Picking straight from Contacts isn't available in this browser yet — as of now it only works in Chrome on Android. Add people manually below instead.</p>
+
       <div class="form-grid">
         <div class="field">
           <label for="newName">Name</label>
@@ -565,8 +573,8 @@
     var ready = recipientReadyCount();
     if (!state.armed) return { cls: "unlit", badge: "Off" };
     if (ready === 0) return { cls: "unlit", badge: "No recip." };
-    if (state.nextWhich === which) return { cls: "next", badge: "Next" };
-    return { cls: "", badge: "Send" };
+    if (state.nextWhich === which) return { cls: "next", badge: "" };
+    return { cls: "", badge: "" };
   }
 
   function renderSend() {
@@ -649,6 +657,57 @@
         renderSend();
       });
       list.appendChild(row);
+    });
+  }
+
+  // ---------- Contact picker ----------
+  var contactPickerSupported = !!(navigator.contacts && navigator.contacts.select && window.ContactsManager);
+  if (contactPickerSupported) {
+    $("contactPickerRow").style.display = "block";
+  } else {
+    $("contactPickerUnsupported").style.display = "block";
+  }
+
+  $("pickContactsBtn") && $("pickContactsBtn").addEventListener("click", function () {
+    pickFromContacts();
+  });
+
+  function pickFromContacts() {
+    navigator.contacts.getProperties().then(function (supportedProps) {
+      var wanted = ["name", "tel", "email"].filter(function (p) { return supportedProps.indexOf(p) !== -1; });
+      if (wanted.indexOf("tel") === -1 && wanted.indexOf("email") === -1) {
+        toast("This device can't share phone numbers or emails through Contacts");
+        return null;
+      }
+      return navigator.contacts.select(wanted, { multiple: true });
+    }).then(function (contacts) {
+      if (!contacts || !contacts.length) return;
+      var added = 0;
+      contacts.forEach(function (c) {
+        var name = (c.name && c.name[0]) || "";
+        var phone = (c.tel && c.tel[0]) || "";
+        var email = (c.email && c.email[0]) || "";
+        if (!phone && !email) return;
+        var dup = state.members.some(function (m) {
+          return (phone && normalizePhone(m.phone) === normalizePhone(phone)) ||
+            (email && m.email && m.email.toLowerCase() === email.toLowerCase());
+        });
+        if (dup) return;
+        state.members.push({ id: uid(), name: name, phone: phone, email: email, enabled: true });
+        added++;
+      });
+      if (added > 0) {
+        save();
+        renderMembers();
+        renderSend();
+      }
+      toast(added === 0 ? "No new contacts added (already in your list?)" : added + " contact" + (added === 1 ? "" : "s") + " added");
+    }).catch(function (e) {
+      if (e && e.name === "SecurityError") {
+        toast("Tap the button again to open Contacts");
+      } else if (e && e.name !== "AbortError") {
+        toast("Couldn't open Contacts");
+      }
     });
   }
 
