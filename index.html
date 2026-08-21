@@ -97,6 +97,17 @@
     background: repeating-linear-gradient(135deg, var(--cyan) 0 8px, transparent 8px 16px);
     opacity: 0.55;
   }
+  header.top .scanline {
+    position: absolute; top: 0; bottom: 0; width: 90px; left: -90px;
+    background: linear-gradient(90deg, transparent, var(--cyan-soft) 45%, var(--cyan-glow) 50%, var(--cyan-soft) 55%, transparent);
+    opacity: 0.8; pointer-events: none;
+    animation: scanSweep 6s ease-in-out infinite;
+  }
+  @keyframes scanSweep {
+    0% { left: -90px; }
+    35% { left: 100%; }
+    100% { left: 100%; }
+  }
   header.top h1 {
     font-size: 19px; letter-spacing: 0.1em; text-transform: uppercase;
     text-shadow: 0 0 14px var(--cyan-glow);
@@ -112,7 +123,7 @@
   .card, .dash-armbar, .menu-row {
     background: var(--panel);
     border: 1px solid var(--border);
-    border-radius: 6px;
+    clip-path: polygon(14px 0, 100% 0, 100% calc(100% - 14px), calc(100% - 14px) 100%, 0 100%, 0 14px);
     padding: 16px;
     box-shadow: 0 1px 2px var(--shadow), inset 0 0 0 1px rgba(34,226,255,0.025);
     position: relative;
@@ -122,8 +133,8 @@
     content: ""; position: absolute; width: 13px; height: 13px; pointer-events: none;
     border-color: var(--cyan); border-style: solid; opacity: 0.5;
   }
-  .card::before, .dash-armbar::before, .menu-row::before { top: -1px; left: -1px; border-width: 2px 0 0 2px; }
-  .card::after, .dash-armbar::after, .menu-row::after { bottom: -1px; right: -1px; border-width: 0 2px 2px 0; }
+  .card::before, .dash-armbar::before, .menu-row::before { top: 0; right: 0; border-width: 2px 2px 0 0; }
+  .card::after, .dash-armbar::after, .menu-row::after { bottom: 0; left: 0; border-width: 0 0 2px 2px; }
 
   .menu-row {
     display: flex; align-items: center; gap: 12px; width: 100%;
@@ -170,6 +181,12 @@
   .dash-armbar .state { font-family: var(--font-mono); font-size: 15px; margin-top: 2px; letter-spacing: 0.06em; text-transform: uppercase; }
   .dash-armbar .state.on { color: var(--cyan); text-shadow: 0 0 10px var(--cyan-glow); }
   .dash-armbar .state.off { color: var(--ink-faint); }
+  .dash-armbar .state.on::before {
+    content: ""; display: inline-block; width: 6px; height: 6px; border-radius: 50%;
+    background: var(--cyan); box-shadow: 0 0 6px var(--cyan); margin-right: 7px;
+    animation: statusBlink 1.6s ease-in-out infinite;
+  }
+  @keyframes statusBlink { 0%, 100% { opacity: 1; } 50% { opacity: 0.25; } }
 
   .dash-circles {
     display: flex; gap: 20px; justify-content: center; align-items: flex-start;
@@ -193,6 +210,14 @@
     transition: transform 0.08s ease, filter 0.25s ease;
   }
   .circle-btn:active { transform: scale(0.96); }
+  .circle-btn::after {
+    content: ""; position: absolute; inset: -10px; border-radius: 50%;
+    border: 2px dashed var(--glow); opacity: 0.6; pointer-events: none;
+    animation: radarSpin 7s linear infinite;
+  }
+  .circle-btn.small::after { inset: -7px; }
+  .circle-btn.unlit::after { display: none; }
+  @keyframes radarSpin { to { transform: rotate(360deg); } }
   .circle-btn.green { --hi: var(--green-hi); --mid: var(--green-mid); --dim: var(--green-dim); --glow: var(--green-glow); }
   .circle-btn.blue { --hi: var(--blue-hi); --mid: var(--blue-mid); --dim: var(--blue-dim); --glow: var(--blue-glow); }
   .circle-btn.small {
@@ -390,6 +415,7 @@
 </style>
 
 <header class="top">
+  <span class="scanline"></span>
   <h1>HootieHoo</h1>
   <div class="sub">Two-tap check-in messages for your people</div>
 </header>

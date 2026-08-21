@@ -4,7 +4,7 @@ A personal check-in shortcut: one home-screen icon, two pre-written messages, se
 
 Tap the red "HootieHoo" button before you head out; tap the green "Nesting" button when you're back. Each tap opens your phone's Messages (or Mail) app with everyone enabled already filled in, so getting the word out is a two-tap job instead of typing it out each time. A smaller blue "CaCaw" button below those two is for the rare emergency case — see below for why it behaves differently.
 
-The whole app is styled as a cyan-on-black HUD — corner-bracketed panels, monospace uppercase labels, labeled ON/OFF toggles, glowing focus states. The red/green/blue on the three message buttons is the one color left untouched by that theme, since it's carrying real meaning (which button is which), not just decoration.
+The whole app is styled as a cyan-on-black HUD — angular, notch-cornered panels, monospace uppercase labels, labeled ON/OFF toggles, glowing focus states, a slow scanline sweep across the header, a blinking status LED next to "ARMED," and a dashed radar ring rotating around each of the three message buttons. The red/green/blue on the three message buttons is the one color left untouched by that theme, since it's carrying real meaning (which button is which), not just decoration.
 
 ## What it does
 
