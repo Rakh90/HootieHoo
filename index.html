@@ -41,6 +41,11 @@
     --green-dim: #123322;
     --green-glow: rgba(47, 159, 99, 0.5);
 
+    --blue-hi: #a8caff;
+    --blue-mid: #3f7fe0;
+    --blue-dim: #142845;
+    --blue-glow: rgba(63, 127, 224, 0.55);
+
     --unlit-hi: #4a5262;
     --unlit-mid: #2c3340;
     --unlit-dim: #14181f;
@@ -129,6 +134,13 @@
   }
   .circle-btn:active { transform: scale(0.96); }
   .circle-btn.green { --hi: var(--green-hi); --mid: var(--green-mid); --dim: var(--green-dim); --glow: var(--green-glow); }
+  .circle-btn.blue { --hi: var(--blue-hi); --mid: var(--blue-mid); --dim: var(--blue-dim); --glow: var(--blue-glow); }
+  .circle-btn.small {
+    width: min(24vw, 96px); height: min(24vw, 96px);
+    gap: 2px;
+  }
+  .circle-btn.small .cb-label { font-size: clamp(11px, 3.2vw, 14px); }
+  .circle-btn.small .cb-sub { font-size: 9px; }
   .circle-btn.unlit {
     --hi: var(--unlit-hi); --mid: var(--unlit-mid); --dim: var(--unlit-dim); --glow: var(--unlit-glow);
     cursor: not-allowed;
@@ -161,7 +173,17 @@
   .preview-tag { font-size: 10px; margin-top: 5px; flex: none; }
   .preview-tag.red { color: var(--red-mid); }
   .preview-tag.green { color: var(--green-mid); }
+  .preview-tag.blue { color: var(--blue-mid); }
   .preview-text { font-size: 13.5px; color: var(--ink-muted); line-height: 1.4; }
+
+  .dash-emergency {
+    display: flex; flex-direction: column; align-items: center; gap: 10px;
+    padding-top: 6px; border-top: 1px solid var(--border-soft); margin-top: 2px;
+  }
+  .dash-emergency-label {
+    font-family: var(--font-mono); font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.1em;
+    color: var(--ink-faint); text-align: center;
+  }
 
   .btn-row { display: flex; gap: 10px; flex-wrap: wrap; }
   .btn {
@@ -280,6 +302,14 @@
       </button>
     </div>
 
+    <div class="dash-emergency">
+      <div class="dash-emergency-label">Emergency — rare, needs a second tap to confirm</div>
+      <button class="circle-btn small blue" id="btnThird">
+        <span class="cb-label" id="thirdLabel">CaCaw</span>
+        <span class="cb-sub" id="thirdBadge"></span>
+      </button>
+    </div>
+
     <div class="card">
       <h2>Message preview</h2>
       <div class="preview-row">
@@ -289,6 +319,10 @@
       <div class="preview-row">
         <span class="preview-tag green">&#9679;</span>
         <span class="preview-text" id="secondPreview">The Owls Are Sleeping</span>
+      </div>
+      <div class="preview-row">
+        <span class="preview-tag blue">&#9679;</span>
+        <span class="preview-text" id="thirdPreview">Crows are a circling - code blue</span>
       </div>
     </div>
 
@@ -367,6 +401,19 @@
       </div>
     </div>
     <div class="card">
+      <h2>Message 3 — emergency (rare, needs a confirm tap)</h2>
+      <div class="form-grid">
+        <div class="field">
+          <label for="thirdLabelInput">Button title (short — this is all that shows on the circle)</label>
+          <input type="text" id="thirdLabelInput" />
+        </div>
+        <div class="field">
+          <label for="thirdBodyInput">Message text (the full text that actually gets sent)</label>
+          <textarea id="thirdBodyInput"></textarea>
+        </div>
+      </div>
+    </div>
+    <div class="card">
       <h2>Send via</h2>
       <div class="field">
         <select id="channelSelect">
@@ -440,7 +487,8 @@
       members: [],
       messages: {
         first: { label: "HootieHoo", body: "HootieHoo Owls In The Sky" },
-        second: { label: "Nesting", body: "The Owls Are Sleeping" }
+        second: { label: "Nesting", body: "The Owls Are Sleeping" },
+        third: { label: "CaCaw", body: "Crows are a circling - code blue" }
       },
       channel: "sms",
       nextWhich: "first",
@@ -460,7 +508,8 @@
         members: Array.isArray(parsed.members) ? parsed.members : d.members,
         messages: Object.assign({}, d.messages, parsed.messages, {
           first: Object.assign({}, d.messages.first, parsed.messages && parsed.messages.first),
-          second: Object.assign({}, d.messages.second, parsed.messages && parsed.messages.second)
+          second: Object.assign({}, d.messages.second, parsed.messages && parsed.messages.second),
+          third: Object.assign({}, d.messages.third, parsed.messages && parsed.messages.third)
         }),
         channel: parsed.channel === "email" ? "email" : "sms",
         nextWhich: parsed.nextWhich === "second" ? "second" : "first",
@@ -554,13 +603,46 @@
     window.location.href = link;
     state.log.unshift({ which: which, ts: Date.now(), count: ready });
     state.log = state.log.slice(0, 25);
-    state.nextWhich = which === "first" ? "second" : "first";
+    if (which === "first" || which === "second") {
+      state.nextWhich = which === "first" ? "second" : "first";
+    }
     save();
     renderSend();
   }
 
   $("btnFirst").addEventListener("click", function () { doSend("first"); });
   $("btnSecond").addEventListener("click", function () { doSend("second"); });
+
+  var thirdArmed = false;
+  var thirdArmTimer = null;
+
+  function disarmThird() {
+    thirdArmed = false;
+    clearTimeout(thirdArmTimer);
+    renderSend();
+  }
+
+  $("btnThird").addEventListener("click", function () {
+    if (!state.armed) {
+      toast("System disarmed — flip Armed on at the top to send");
+      return;
+    }
+    if (recipientReadyCount() === 0) {
+      toast("No enabled recipients have a " + (state.channel === "email" ? "email" : "phone number") + " — check Members");
+      return;
+    }
+    if (!thirdArmed) {
+      thirdArmed = true;
+      clearTimeout(thirdArmTimer);
+      thirdArmTimer = setTimeout(disarmThird, 4000);
+      renderSend();
+      toast("Tap again within a few seconds to send " + state.messages.third.label);
+      return;
+    }
+    clearTimeout(thirdArmTimer);
+    thirdArmed = false;
+    doSend("third");
+  });
 
   function timeAgo(ts) {
     var mins = Math.round((Date.now() - ts) / 60000);
@@ -579,6 +661,14 @@
     return { cls: "", badge: "" };
   }
 
+  function thirdCircleState() {
+    var ready = recipientReadyCount();
+    if (!state.armed) return { cls: "unlit", badge: "Off" };
+    if (ready === 0) return { cls: "unlit", badge: "No recip." };
+    if (thirdArmed) return { cls: "next", badge: "Tap again" };
+    return { cls: "", badge: "" };
+  }
+
   function renderSend() {
     $("armStateText").textContent = state.armed ? "Armed" : "Standby";
     $("armStateText").classList.toggle("on", state.armed);
@@ -589,6 +679,8 @@
     $("firstPreview").textContent = state.messages.first.body;
     $("secondLabel").textContent = state.messages.second.label;
     $("secondPreview").textContent = state.messages.second.body;
+    $("thirdLabel").textContent = state.messages.third.label;
+    $("thirdPreview").textContent = state.messages.third.body;
 
     var firstState = circleState("first");
     var secondState = circleState("second");
@@ -596,6 +688,10 @@
     $("btnSecond").className = "circle-btn green" + (secondState.cls ? " " + secondState.cls : "");
     $("firstBadge").textContent = firstState.badge;
     $("secondBadge").textContent = secondState.badge;
+
+    var thirdState = thirdCircleState();
+    $("btnThird").className = "circle-btn small blue" + (thirdState.cls ? " " + thirdState.cls : "");
+    $("thirdBadge").textContent = thirdState.badge;
 
     var members = state.members;
     var enabled = enabledMembers();
@@ -773,6 +869,8 @@
     $("firstBodyInput").value = state.messages.first.body;
     $("secondLabelInput").value = state.messages.second.label;
     $("secondBodyInput").value = state.messages.second.body;
+    $("thirdLabelInput").value = state.messages.third.label;
+    $("thirdBodyInput").value = state.messages.third.body;
     $("channelSelect").value = state.channel;
   }
 
@@ -787,6 +885,8 @@
   bindSettingsField("firstBodyInput", function (v) { state.messages.first.body = v; });
   bindSettingsField("secondLabelInput", function (v) { state.messages.second.label = v || "Message 2"; });
   bindSettingsField("secondBodyInput", function (v) { state.messages.second.body = v; });
+  bindSettingsField("thirdLabelInput", function (v) { state.messages.third.label = v || "Message 3"; });
+  bindSettingsField("thirdBodyInput", function (v) { state.messages.third.body = v; });
   $("channelSelect").addEventListener("change", function () {
     state.channel = $("channelSelect").value;
     save();

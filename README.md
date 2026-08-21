@@ -2,11 +2,12 @@
 
 A personal check-in shortcut: one home-screen icon, two pre-written messages, sent to whichever people in your group are currently turned on.
 
-Tap the red "HootieHoo Owls In The Sky" button before you head out; tap the green "The Owls Are Sleeping" button when you're back. Each tap opens your phone's Messages (or Mail) app with everyone enabled already filled in, so getting the word out is a two-tap job instead of typing it out each time.
+Tap the red "HootieHoo" button before you head out; tap the green "Nesting" button when you're back. Each tap opens your phone's Messages (or Mail) app with everyone enabled already filled in, so getting the word out is a two-tap job instead of typing it out each time. A smaller blue "CaCaw" button below those two is for the rare emergency case — see below for why it behaves differently.
 
 ## What it does
 
-- **Send (the dashboard)** — a dark, illuminated-button control panel: a red circular button and a green circular all-clear button, with fully editable labels and text (Settings). Whichever you're expected to send next pulses gently, but either is always tappable — useful if you need to re-send or skip straight to the all-clear. A running local activity log shows what was opened and when (it can't confirm the message actually went out — see below).
+- **Send (the dashboard)** — a dark, illuminated-button control panel: a red circular button and a green circular all-clear button, with fully editable titles and text (Settings). Whichever you're expected to send next pulses gently, but either is always tappable — useful if you need to re-send or skip straight to the all-clear. A running local activity log shows what was opened and when (it can't confirm the message actually went out — see below).
+- **Emergency button** — a smaller blue circle below the main two, set apart with its own "Emergency" label since it's meant to be used rarely. Unlike the other two, it needs **two taps**: the first arms it (it'll pulse and show "Tap again," with about 4 seconds to confirm before it quietly disarms itself), the second actually sends. That's there on purpose — a message meant for genuine emergencies shouldn't be one accidental tap away. Fully editable in Settings like the other two.
 - **System armed / standby toggle** — a master switch at the top of the dashboard. Flip it to Standby to dim both buttons and block taps entirely, without touching your members or messages — a quick "off" for whenever you don't want this thing live.
 - **Members** — add people with a phone number and/or email, and flip any one of them off without deleting them — handy for "not this trip" without losing their info. On browsers that support it (currently Chrome on Android), an **Add from Contacts** button lets you pick people straight from your phone's contact list instead of typing them in — see below for where this does and doesn't work.
 - **Settings** — edit both message texts and button labels, and choose whether messages go out as a group text (SMS) or email (bcc). Email is a useful fallback for a contact without a phone number, or when group SMS gets flaky across a mix of iPhone and Android.
@@ -46,7 +47,7 @@ Everything — members, messages, activity log — is stored **only in your brow
 
 Clearing your browser's site data for this page erases everything. There's no backup/export yet — worth adding if you end up relying on this.
 
-Since your saved messages/members always take priority over the code's built-in defaults (so an update never silently overwrites wording you've customized — see below), Settings has a **Reset messages to default** button for when you actually do want to go back to HootieHoo's stock titles/text/send-channel. It leaves your members list and activity log alone.
+Since your saved messages/members always take priority over the code's built-in defaults (so an update never silently overwrites wording you've customized — see below), Settings has a **Reset messages to default** button for when you actually do want to go back to HootieHoo's stock titles/text/send-channel, including the emergency button. It leaves your members list and activity log alone.
 
 ## Running it
 
