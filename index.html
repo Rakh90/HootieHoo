@@ -1145,6 +1145,7 @@
       });
       row.querySelector(".switch").addEventListener("click", function () {
         g.enabled = !g.enabled;
+        this.classList.toggle("on", g.enabled);
         save();
         renderMembersMenu();
         renderSend();
