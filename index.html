@@ -618,6 +618,8 @@
     state.log = state.log.slice(0, 25);
     if (which === "first" || which === "second") {
       state.nextWhich = which === "first" ? "second" : "first";
+    } else if (which === "third") {
+      state.nextWhich = "second";
     }
     save();
     renderSend();
