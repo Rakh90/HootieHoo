@@ -24,7 +24,9 @@ The Members tab uses the browser's [Contact Picker API](https://developer.mozill
 
 Where it's unsupported, the "Add from Contacts" button simply doesn't appear — you get an explanatory note and the regular manual-entry form instead, which always works everywhere. This is a browser platform limitation, not something specific to HootieHoo's code; it'll quietly start working on more devices as/if Apple adds support in the future, with no changes needed here.
 
-After you pick one or more people, HootieHoo asks which group to put them in before actually adding them — it doesn't just dump them into whatever group happened to be selected in the manual-add form. That confirmation step shows who you picked and a group dropdown; nothing is added until you tap Add there (or Cancel to back out).
+After you pick one or more people, HootieHoo asks which group(s) to put them in before actually adding them — it doesn't just dump them into whatever group happened to be selected in the manual-add form. That confirmation step shows who you picked and a chip row to tick as many groups as apply; nothing is added until you tap Add there (or Cancel to back out).
+
+Re-adding someone already on your list — by contact picker or the manual form, matched on phone number or email — doesn't create a duplicate. It adds whatever group(s) you just selected to their existing record, so "this person is already in Family, now also add them to Hiking Buddies" works by just adding them again with the new group ticked.
 
 ## Installing it as a home-screen dashboard
 

@@ -865,6 +865,24 @@
     });
   }
 
+  function findMemberByContact(phone, email) {
+    return state.members.find(function (m) {
+      return (phone && normalizePhone(m.phone) === normalizePhone(phone)) ||
+        (email && m.email && m.email.toLowerCase() === email.toLowerCase());
+    });
+  }
+
+  function addGroupsToMember(m, groupIds) {
+    var addedAny = false;
+    groupIds.forEach(function (gid) {
+      if (m.groupIds.indexOf(gid) === -1) {
+        m.groupIds.push(gid);
+        addedAny = true;
+      }
+    });
+    return addedAny;
+  }
+
   function renderMembers() {
     renderGroupList();
     renderMemberGroupCards();
@@ -1062,22 +1080,26 @@
       return;
     }
     var added = 0;
+    var updated = 0;
     pendingContacts.forEach(function (c) {
-      var dup = state.members.some(function (m) {
-        return (c.phone && normalizePhone(m.phone) === normalizePhone(c.phone)) ||
-          (c.email && m.email && m.email.toLowerCase() === c.email.toLowerCase());
-      });
-      if (dup) return;
+      var existing = findMemberByContact(c.phone, c.email);
+      if (existing) {
+        if (addGroupsToMember(existing, groupIds)) updated++;
+        return;
+      }
       state.members.push({ id: uid(), name: c.name, phone: c.phone, email: c.email, enabled: true, groupIds: groupIds.slice() });
       added++;
     });
     closeContactGroupConfirm();
-    if (added > 0) {
+    if (added > 0 || updated > 0) {
       save();
       renderMembers();
       renderSend();
     }
-    toast(added === 0 ? "No new contacts added (already in your list?)" : added + " contact" + (added === 1 ? "" : "s") + " added");
+    var parts = [];
+    if (added > 0) parts.push(added + " new contact" + (added === 1 ? "" : "s") + " added");
+    if (updated > 0) parts.push(updated + " existing contact" + (updated === 1 ? "" : "s") + " added to the selected group(s)");
+    toast(parts.length ? parts.join(", ") : "Already in the selected group(s) — no changes");
   });
 
   $("addMemberBtn").addEventListener("click", function () {
@@ -1091,6 +1113,18 @@
     var groupIds = checkedGroupIds("newMemberGroups");
     if (groupIds.length === 0) {
       toast("Pick at least one group");
+      return;
+    }
+    var existing = findMemberByContact(phone, email);
+    if (existing) {
+      var addedAny = addGroupsToMember(existing, groupIds);
+      $("newName").value = "";
+      $("newPhone").value = "";
+      $("newEmail").value = "";
+      save();
+      renderMembers();
+      renderSend();
+      toast(addedAny ? (existing.name || "They") + " added to the selected group(s)" : (existing.name || "They") + " are already in the selected group(s)");
       return;
     }
     state.members.push({ id: uid(), name: name, phone: phone, email: email, enabled: true, groupIds: groupIds });
