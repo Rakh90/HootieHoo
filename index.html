@@ -523,6 +523,21 @@
   </div>
 </div>
 
+<div class="modal-backdrop" id="contactGroupBackdrop">
+  <div class="modal">
+    <h3>Add to which group?</h3>
+    <p class="hint" id="contactGroupSummary"></p>
+    <div class="field">
+      <label for="contactGroupSelect">Group</label>
+      <select id="contactGroupSelect"></select>
+    </div>
+    <div class="btn-row">
+      <button class="btn accent" id="contactGroupConfirmBtn">Add</button>
+      <button class="btn ghost" id="contactGroupCancelBtn">Cancel</button>
+    </div>
+  </div>
+</div>
+
 <script>
 (function () {
   "use strict";
@@ -929,7 +944,7 @@
   }
 
   function renderGroupSelectOptions() {
-    [$("newMemberGroup"), $("editGroup")].forEach(function (sel) {
+    [$("newMemberGroup"), $("editGroup"), $("contactGroupSelect")].forEach(function (sel) {
       if (!sel) return;
       var prevValue = sel.value;
       sel.innerHTML = "";
@@ -969,6 +984,8 @@
     pickFromContacts();
   });
 
+  var pendingContacts = null;
+
   function pickFromContacts() {
     navigator.contacts.getProperties().then(function (supportedProps) {
       var wanted = ["name", "tel", "email"].filter(function (p) { return supportedProps.indexOf(p) !== -1; });
@@ -979,27 +996,18 @@
       return navigator.contacts.select(wanted, { multiple: true });
     }).then(function (contacts) {
       if (!contacts || !contacts.length) return;
-      var added = 0;
-      contacts.forEach(function (c) {
-        var name = (c.name && c.name[0]) || "";
-        var phone = (c.tel && c.tel[0]) || "";
-        var email = (c.email && c.email[0]) || "";
-        if (!phone && !email) return;
-        var dup = state.members.some(function (m) {
-          return (phone && normalizePhone(m.phone) === normalizePhone(phone)) ||
-            (email && m.email && m.email.toLowerCase() === email.toLowerCase());
-        });
-        if (dup) return;
-        var groupId = ($("newMemberGroup") && $("newMemberGroup").value) || state.groups[0].id;
-        state.members.push({ id: uid(), name: name, phone: phone, email: email, enabled: true, groupId: groupId });
-        added++;
-      });
-      if (added > 0) {
-        save();
-        renderMembers();
-        renderSend();
+      var parsed = contacts.map(function (c) {
+        return {
+          name: (c.name && c.name[0]) || "",
+          phone: (c.tel && c.tel[0]) || "",
+          email: (c.email && c.email[0]) || ""
+        };
+      }).filter(function (c) { return c.phone || c.email; });
+      if (parsed.length === 0) {
+        toast("None of that had a usable phone number or email");
+        return;
       }
-      toast(added === 0 ? "No new contacts added (already in your list?)" : added + " contact" + (added === 1 ? "" : "s") + " added");
+      openContactGroupConfirm(parsed);
     }).catch(function (e) {
       if (e && e.name === "SecurityError") {
         toast("Tap the button again to open Contacts");
@@ -1008,6 +1016,46 @@
       }
     });
   }
+
+  function openContactGroupConfirm(parsed) {
+    pendingContacts = parsed;
+    var names = parsed.map(function (c) { return c.name || c.phone || c.email; }).join(", ");
+    $("contactGroupSummary").textContent = "Adding " + parsed.length + " contact" + (parsed.length === 1 ? "" : "s") + ": " + names;
+    renderGroupSelectOptions();
+    $("contactGroupBackdrop").classList.add("show");
+  }
+
+  function closeContactGroupConfirm() {
+    pendingContacts = null;
+    $("contactGroupBackdrop").classList.remove("show");
+  }
+
+  $("contactGroupCancelBtn").addEventListener("click", closeContactGroupConfirm);
+  $("contactGroupBackdrop").addEventListener("click", function (e) {
+    if (e.target === $("contactGroupBackdrop")) closeContactGroupConfirm();
+  });
+
+  $("contactGroupConfirmBtn").addEventListener("click", function () {
+    if (!pendingContacts) return;
+    var groupId = $("contactGroupSelect").value || state.groups[0].id;
+    var added = 0;
+    pendingContacts.forEach(function (c) {
+      var dup = state.members.some(function (m) {
+        return (c.phone && normalizePhone(m.phone) === normalizePhone(c.phone)) ||
+          (c.email && m.email && m.email.toLowerCase() === c.email.toLowerCase());
+      });
+      if (dup) return;
+      state.members.push({ id: uid(), name: c.name, phone: c.phone, email: c.email, enabled: true, groupId: groupId });
+      added++;
+    });
+    closeContactGroupConfirm();
+    if (added > 0) {
+      save();
+      renderMembers();
+      renderSend();
+    }
+    toast(added === 0 ? "No new contacts added (already in your list?)" : added + " contact" + (added === 1 ? "" : "s") + " added");
+  });
 
   $("addMemberBtn").addEventListener("click", function () {
     var name = $("newName").value.trim();

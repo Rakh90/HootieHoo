@@ -24,6 +24,8 @@ The Members tab uses the browser's [Contact Picker API](https://developer.mozill
 
 Where it's unsupported, the "Add from Contacts" button simply doesn't appear — you get an explanatory note and the regular manual-entry form instead, which always works everywhere. This is a browser platform limitation, not something specific to HootieHoo's code; it'll quietly start working on more devices as/if Apple adds support in the future, with no changes needed here.
 
+After you pick one or more people, HootieHoo asks which group to put them in before actually adding them — it doesn't just dump them into whatever group happened to be selected in the manual-add form. That confirmation step shows who you picked and a group dropdown; nothing is added until you tap Add there (or Cancel to back out).
+
 ## Installing it as a home-screen dashboard
 
 HootieHoo ships with a `manifest.json` and app icon, so "Add to Home Screen" launches it full-screen with no browser address bar — it looks and feels like an installed app, not a bookmark. One real limit worth knowing: like any website or installed web-app, it only runs while you actually have it open. There's no way for a page like this to keep running, listen for anything, or act in the true background while your phone is locked or you're in another app — that would require a native app with OS-level background permissions, a different and much bigger project than a static page. What you get here is an app-like *launch experience*, not background execution.
